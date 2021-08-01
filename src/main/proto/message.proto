@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package synchro;
+
+option java_package = "damian.tab.dsynchro.proto";
+option java_outer_classname = "ProtoMessages";
+option java_multiple_files = true;
+
+
+//pub-sub serwerów
+message SynchroMessage {
+    enum MessageType {
+        LOCK = 0;
+        UNLOCK = 1;
+        NOTIFY = 2;
+        NOTIFY_ALL = 3;
+    }
+
+    int32 processID = 1;
+    repeated int32 clock = 2;
+    MessageType type = 3;
+    string objectID = 4;
+}
+
+//req-rep na portmapper
+message InitRequestMessage {
+    string address = 1;
+    bool ready = 2;
+}
+
+//req-rep na portmapper
+message InitResponseMessage {
+    int32 processID = 1;
+    string portMapperAddress = 2;
+    repeated string addresses = 3;
+}
+
+//portmapper na swoim pub-subie
+message NewConnectionMessage {
+    string address = 1;
+}   

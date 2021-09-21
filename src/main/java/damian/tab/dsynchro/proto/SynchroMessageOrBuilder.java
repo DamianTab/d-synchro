@@ -52,4 +52,27 @@ public interface SynchroMessageOrBuilder extends
    */
   com.google.protobuf.ByteString
       getObjectIDBytes();
+
+  /**
+   * <code>repeated int32 receiverProcessID = 5;</code>
+   * @return A list containing the receiverProcessID.
+   */
+  java.util.List<java.lang.Integer> getReceiverProcessIDList();
+  /**
+   * <code>repeated int32 receiverProcessID = 5;</code>
+   * @return The count of receiverProcessID.
+   */
+  int getReceiverProcessIDCount();
+  /**
+   * <code>repeated int32 receiverProcessID = 5;</code>
+   * @param index The index of the element to return.
+   * @return The receiverProcessID at the given index.
+   */
+  int getReceiverProcessID(int index);
+
+  /**
+   * <code>int32 notifyID = 6;</code>
+   * @return The notifyID.
+   */
+  int getNotifyID();
 }

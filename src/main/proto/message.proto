@@ -6,36 +6,40 @@ option java_package = "damian.tab.dsynchro.proto";
 option java_outer_classname = "ProtoMessages";
 option java_multiple_files = true;
 
-
-//pub-sub serwerów
+//pub-sub socket - servers
 message SynchroMessage {
     enum MessageType {
-        LOCK = 0;
-        UNLOCK = 1;
+        LOCK_REQ = 0;
+        LOCK_ACK = 1;
         NOTIFY = 2;
         NOTIFY_ALL = 3;
+        NOTIFY_REQ = 4;
+        NOTIFY_ACK = 5;
+        NOTIFY_RST = 6;
     }
 
     int32 processID = 1;
     repeated int32 clock = 2;
     MessageType type = 3;
     string objectID = 4;
+    repeated int32 receiverProcessID = 5;
+    int32 notifyID = 6;
 }
 
-//req-rep na portmapper
+//req-rep socket - portmapper
 message InitRequestMessage {
     string address = 1;
     bool ready = 2;
 }
 
-//req-rep na portmapper
+//req-rep socket - portmapper
 message InitResponseMessage {
     int32 processID = 1;
     string portMapperAddress = 2;
     repeated string addresses = 3;
 }
 
-//portmapper na swoim pub-subie
+//pub-sub socket - portmapper
 message NewConnectionMessage {
     string address = 1;
 }   

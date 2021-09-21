@@ -5,7 +5,7 @@ package damian.tab.dsynchro.proto;
 
 /**
  * <pre>
- *pub-sub serwerów
+ *pub-sub socket - servers
  * </pre>
  *
  * Protobuf type {@code synchro.SynchroMessage}
@@ -23,6 +23,7 @@ private static final long serialVersionUID = 0L;
     clock_ = emptyIntList();
     type_ = 0;
     objectID_ = "";
+    receiverProcessID_ = emptyIntList();
   }
 
   @java.lang.Override
@@ -94,6 +95,32 @@ private static final long serialVersionUID = 0L;
             objectID_ = s;
             break;
           }
+          case 40: {
+            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+              receiverProcessID_ = newIntList();
+              mutable_bitField0_ |= 0x00000002;
+            }
+            receiverProcessID_.addInt(input.readInt32());
+            break;
+          }
+          case 42: {
+            int length = input.readRawVarint32();
+            int limit = input.pushLimit(length);
+            if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
+              receiverProcessID_ = newIntList();
+              mutable_bitField0_ |= 0x00000002;
+            }
+            while (input.getBytesUntilLimit() > 0) {
+              receiverProcessID_.addInt(input.readInt32());
+            }
+            input.popLimit(limit);
+            break;
+          }
+          case 48: {
+
+            notifyID_ = input.readInt32();
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -111,6 +138,9 @@ private static final long serialVersionUID = 0L;
     } finally {
       if (((mutable_bitField0_ & 0x00000001) != 0)) {
         clock_.makeImmutable(); // C
+      }
+      if (((mutable_bitField0_ & 0x00000002) != 0)) {
+        receiverProcessID_.makeImmutable(); // C
       }
       this.unknownFields = unknownFields.build();
       makeExtensionsImmutable();
@@ -135,13 +165,13 @@ private static final long serialVersionUID = 0L;
   public enum MessageType
       implements com.google.protobuf.ProtocolMessageEnum {
     /**
-     * <code>LOCK = 0;</code>
+     * <code>LOCK_REQ = 0;</code>
      */
-    LOCK(0),
+    LOCK_REQ(0),
     /**
-     * <code>UNLOCK = 1;</code>
+     * <code>LOCK_ACK = 1;</code>
      */
-    UNLOCK(1),
+    LOCK_ACK(1),
     /**
      * <code>NOTIFY = 2;</code>
      */
@@ -150,17 +180,29 @@ private static final long serialVersionUID = 0L;
      * <code>NOTIFY_ALL = 3;</code>
      */
     NOTIFY_ALL(3),
+    /**
+     * <code>NOTIFY_REQ = 4;</code>
+     */
+    NOTIFY_REQ(4),
+    /**
+     * <code>NOTIFY_ACK = 5;</code>
+     */
+    NOTIFY_ACK(5),
+    /**
+     * <code>NOTIFY_RST = 6;</code>
+     */
+    NOTIFY_RST(6),
     UNRECOGNIZED(-1),
     ;
 
     /**
-     * <code>LOCK = 0;</code>
+     * <code>LOCK_REQ = 0;</code>
      */
-    public static final int LOCK_VALUE = 0;
+    public static final int LOCK_REQ_VALUE = 0;
     /**
-     * <code>UNLOCK = 1;</code>
+     * <code>LOCK_ACK = 1;</code>
      */
-    public static final int UNLOCK_VALUE = 1;
+    public static final int LOCK_ACK_VALUE = 1;
     /**
      * <code>NOTIFY = 2;</code>
      */
@@ -169,6 +211,18 @@ private static final long serialVersionUID = 0L;
      * <code>NOTIFY_ALL = 3;</code>
      */
     public static final int NOTIFY_ALL_VALUE = 3;
+    /**
+     * <code>NOTIFY_REQ = 4;</code>
+     */
+    public static final int NOTIFY_REQ_VALUE = 4;
+    /**
+     * <code>NOTIFY_ACK = 5;</code>
+     */
+    public static final int NOTIFY_ACK_VALUE = 5;
+    /**
+     * <code>NOTIFY_RST = 6;</code>
+     */
+    public static final int NOTIFY_RST_VALUE = 6;
 
 
     public final int getNumber() {
@@ -195,10 +249,13 @@ private static final long serialVersionUID = 0L;
      */
     public static MessageType forNumber(int value) {
       switch (value) {
-        case 0: return LOCK;
-        case 1: return UNLOCK;
+        case 0: return LOCK_REQ;
+        case 1: return LOCK_ACK;
         case 2: return NOTIFY;
         case 3: return NOTIFY_ALL;
+        case 4: return NOTIFY_REQ;
+        case 5: return NOTIFY_ACK;
+        case 6: return NOTIFY_RST;
         default: return null;
       }
     }
@@ -351,6 +408,45 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int RECEIVERPROCESSID_FIELD_NUMBER = 5;
+  private com.google.protobuf.Internal.IntList receiverProcessID_;
+  /**
+   * <code>repeated int32 receiverProcessID = 5;</code>
+   * @return A list containing the receiverProcessID.
+   */
+  @java.lang.Override
+  public java.util.List<java.lang.Integer>
+      getReceiverProcessIDList() {
+    return receiverProcessID_;
+  }
+  /**
+   * <code>repeated int32 receiverProcessID = 5;</code>
+   * @return The count of receiverProcessID.
+   */
+  public int getReceiverProcessIDCount() {
+    return receiverProcessID_.size();
+  }
+  /**
+   * <code>repeated int32 receiverProcessID = 5;</code>
+   * @param index The index of the element to return.
+   * @return The receiverProcessID at the given index.
+   */
+  public int getReceiverProcessID(int index) {
+    return receiverProcessID_.getInt(index);
+  }
+  private int receiverProcessIDMemoizedSerializedSize = -1;
+
+  public static final int NOTIFYID_FIELD_NUMBER = 6;
+  private int notifyID_;
+  /**
+   * <code>int32 notifyID = 6;</code>
+   * @return The notifyID.
+   */
+  @java.lang.Override
+  public int getNotifyID() {
+    return notifyID_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -376,11 +472,21 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < clock_.size(); i++) {
       output.writeInt32NoTag(clock_.getInt(i));
     }
-    if (type_ != damian.tab.dsynchro.proto.SynchroMessage.MessageType.LOCK.getNumber()) {
+    if (type_ != damian.tab.dsynchro.proto.SynchroMessage.MessageType.LOCK_REQ.getNumber()) {
       output.writeEnum(3, type_);
     }
     if (!getObjectIDBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, objectID_);
+    }
+    if (getReceiverProcessIDList().size() > 0) {
+      output.writeUInt32NoTag(42);
+      output.writeUInt32NoTag(receiverProcessIDMemoizedSerializedSize);
+    }
+    for (int i = 0; i < receiverProcessID_.size(); i++) {
+      output.writeInt32NoTag(receiverProcessID_.getInt(i));
+    }
+    if (notifyID_ != 0) {
+      output.writeInt32(6, notifyID_);
     }
     unknownFields.writeTo(output);
   }
@@ -409,12 +515,30 @@ private static final long serialVersionUID = 0L;
       }
       clockMemoizedSerializedSize = dataSize;
     }
-    if (type_ != damian.tab.dsynchro.proto.SynchroMessage.MessageType.LOCK.getNumber()) {
+    if (type_ != damian.tab.dsynchro.proto.SynchroMessage.MessageType.LOCK_REQ.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(3, type_);
     }
     if (!getObjectIDBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, objectID_);
+    }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < receiverProcessID_.size(); i++) {
+        dataSize += com.google.protobuf.CodedOutputStream
+          .computeInt32SizeNoTag(receiverProcessID_.getInt(i));
+      }
+      size += dataSize;
+      if (!getReceiverProcessIDList().isEmpty()) {
+        size += 1;
+        size += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(dataSize);
+      }
+      receiverProcessIDMemoizedSerializedSize = dataSize;
+    }
+    if (notifyID_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(6, notifyID_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -438,6 +562,10 @@ private static final long serialVersionUID = 0L;
     if (type_ != other.type_) return false;
     if (!getObjectID()
         .equals(other.getObjectID())) return false;
+    if (!getReceiverProcessIDList()
+        .equals(other.getReceiverProcessIDList())) return false;
+    if (getNotifyID()
+        != other.getNotifyID()) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -459,6 +587,12 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + type_;
     hash = (37 * hash) + OBJECTID_FIELD_NUMBER;
     hash = (53 * hash) + getObjectID().hashCode();
+    if (getReceiverProcessIDCount() > 0) {
+      hash = (37 * hash) + RECEIVERPROCESSID_FIELD_NUMBER;
+      hash = (53 * hash) + getReceiverProcessIDList().hashCode();
+    }
+    hash = (37 * hash) + NOTIFYID_FIELD_NUMBER;
+    hash = (53 * hash) + getNotifyID();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -556,7 +690,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   *pub-sub serwerów
+   *pub-sub socket - servers
    * </pre>
    *
    * Protobuf type {@code synchro.SynchroMessage}
@@ -604,6 +738,10 @@ private static final long serialVersionUID = 0L;
 
       objectID_ = "";
 
+      receiverProcessID_ = emptyIntList();
+      bitField0_ = (bitField0_ & ~0x00000002);
+      notifyID_ = 0;
+
       return this;
     }
 
@@ -639,6 +777,12 @@ private static final long serialVersionUID = 0L;
       result.clock_ = clock_;
       result.type_ = type_;
       result.objectID_ = objectID_;
+      if (((bitField0_ & 0x00000002) != 0)) {
+        receiverProcessID_.makeImmutable();
+        bitField0_ = (bitField0_ & ~0x00000002);
+      }
+      result.receiverProcessID_ = receiverProcessID_;
+      result.notifyID_ = notifyID_;
       onBuilt();
       return result;
     }
@@ -706,6 +850,19 @@ private static final long serialVersionUID = 0L;
       if (!other.getObjectID().isEmpty()) {
         objectID_ = other.objectID_;
         onChanged();
+      }
+      if (!other.receiverProcessID_.isEmpty()) {
+        if (receiverProcessID_.isEmpty()) {
+          receiverProcessID_ = other.receiverProcessID_;
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          ensureReceiverProcessIDIsMutable();
+          receiverProcessID_.addAll(other.receiverProcessID_);
+        }
+        onChanged();
+      }
+      if (other.getNotifyID() != 0) {
+        setNotifyID(other.getNotifyID());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -973,6 +1130,116 @@ private static final long serialVersionUID = 0L;
   checkByteStringIsUtf8(value);
       
       objectID_ = value;
+      onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.Internal.IntList receiverProcessID_ = emptyIntList();
+    private void ensureReceiverProcessIDIsMutable() {
+      if (!((bitField0_ & 0x00000002) != 0)) {
+        receiverProcessID_ = mutableCopy(receiverProcessID_);
+        bitField0_ |= 0x00000002;
+       }
+    }
+    /**
+     * <code>repeated int32 receiverProcessID = 5;</code>
+     * @return A list containing the receiverProcessID.
+     */
+    public java.util.List<java.lang.Integer>
+        getReceiverProcessIDList() {
+      return ((bitField0_ & 0x00000002) != 0) ?
+               java.util.Collections.unmodifiableList(receiverProcessID_) : receiverProcessID_;
+    }
+    /**
+     * <code>repeated int32 receiverProcessID = 5;</code>
+     * @return The count of receiverProcessID.
+     */
+    public int getReceiverProcessIDCount() {
+      return receiverProcessID_.size();
+    }
+    /**
+     * <code>repeated int32 receiverProcessID = 5;</code>
+     * @param index The index of the element to return.
+     * @return The receiverProcessID at the given index.
+     */
+    public int getReceiverProcessID(int index) {
+      return receiverProcessID_.getInt(index);
+    }
+    /**
+     * <code>repeated int32 receiverProcessID = 5;</code>
+     * @param index The index to set the value at.
+     * @param value The receiverProcessID to set.
+     * @return This builder for chaining.
+     */
+    public Builder setReceiverProcessID(
+        int index, int value) {
+      ensureReceiverProcessIDIsMutable();
+      receiverProcessID_.setInt(index, value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated int32 receiverProcessID = 5;</code>
+     * @param value The receiverProcessID to add.
+     * @return This builder for chaining.
+     */
+    public Builder addReceiverProcessID(int value) {
+      ensureReceiverProcessIDIsMutable();
+      receiverProcessID_.addInt(value);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated int32 receiverProcessID = 5;</code>
+     * @param values The receiverProcessID to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllReceiverProcessID(
+        java.lang.Iterable<? extends java.lang.Integer> values) {
+      ensureReceiverProcessIDIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, receiverProcessID_);
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>repeated int32 receiverProcessID = 5;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearReceiverProcessID() {
+      receiverProcessID_ = emptyIntList();
+      bitField0_ = (bitField0_ & ~0x00000002);
+      onChanged();
+      return this;
+    }
+
+    private int notifyID_ ;
+    /**
+     * <code>int32 notifyID = 6;</code>
+     * @return The notifyID.
+     */
+    @java.lang.Override
+    public int getNotifyID() {
+      return notifyID_;
+    }
+    /**
+     * <code>int32 notifyID = 6;</code>
+     * @param value The notifyID to set.
+     * @return This builder for chaining.
+     */
+    public Builder setNotifyID(int value) {
+      
+      notifyID_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>int32 notifyID = 6;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearNotifyID() {
+      
+      notifyID_ = 0;
       onChanged();
       return this;
     }

@@ -5,7 +5,7 @@ package damian.tab.dsynchro.proto;
 
 /**
  * <pre>
- *portmapper na swoim pub-subie
+ *pub-sub socket - portmapper
  * </pre>
  *
  * Protobuf type {@code synchro.NewConnectionMessage}
@@ -285,7 +285,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   *portmapper na swoim pub-subie
+   *pub-sub socket - portmapper
    * </pre>
    *
    * Protobuf type {@code synchro.NewConnectionMessage}

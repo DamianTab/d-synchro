@@ -44,17 +44,20 @@ public final class ProtoMessages {
   static {
     java.lang.String[] descriptorData = {
       "\n\034src/main/proto/message.proto\022\007synchro\"" +
-      "\270\001\n\016SynchroMessage\022\021\n\tprocessID\030\001 \001(\005\022\r\n" +
+      "\233\002\n\016SynchroMessage\022\021\n\tprocessID\030\001 \001(\005\022\r\n" +
       "\005clock\030\002 \003(\005\0221\n\004type\030\003 \001(\0162#.synchro.Syn" +
       "chroMessage.MessageType\022\020\n\010objectID\030\004 \001(" +
-      "\t\"?\n\013MessageType\022\010\n\004LOCK\020\000\022\n\n\006UNLOCK\020\001\022\n" +
-      "\n\006NOTIFY\020\002\022\016\n\nNOTIFY_ALL\020\003\"4\n\022InitReques" +
-      "tMessage\022\017\n\007address\030\001 \001(\t\022\r\n\005ready\030\002 \001(\010" +
-      "\"V\n\023InitResponseMessage\022\021\n\tprocessID\030\001 \001" +
-      "(\005\022\031\n\021portMapperAddress\030\002 \001(\t\022\021\n\taddress" +
-      "es\030\003 \003(\t\"\'\n\024NewConnectionMessage\022\017\n\007addr" +
-      "ess\030\001 \001(\tB,\n\031damian.tab.dsynchro.protoB\r" +
-      "ProtoMessagesP\001b\006proto3"
+      "\t\022\031\n\021receiverProcessID\030\005 \003(\005\022\020\n\010notifyID" +
+      "\030\006 \001(\005\"u\n\013MessageType\022\014\n\010LOCK_REQ\020\000\022\014\n\010L" +
+      "OCK_ACK\020\001\022\n\n\006NOTIFY\020\002\022\016\n\nNOTIFY_ALL\020\003\022\016\n" +
+      "\nNOTIFY_REQ\020\004\022\016\n\nNOTIFY_ACK\020\005\022\016\n\nNOTIFY_" +
+      "RST\020\006\"4\n\022InitRequestMessage\022\017\n\007address\030\001" +
+      " \001(\t\022\r\n\005ready\030\002 \001(\010\"V\n\023InitResponseMessa" +
+      "ge\022\021\n\tprocessID\030\001 \001(\005\022\031\n\021portMapperAddre" +
+      "ss\030\002 \001(\t\022\021\n\taddresses\030\003 \003(\t\"\'\n\024NewConnec" +
+      "tionMessage\022\017\n\007address\030\001 \001(\tB,\n\031damian.t" +
+      "ab.dsynchro.protoB\rProtoMessagesP\001b\006prot" +
+      "o3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -65,7 +68,7 @@ public final class ProtoMessages {
     internal_static_synchro_SynchroMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_synchro_SynchroMessage_descriptor,
-        new java.lang.String[] { "ProcessID", "Clock", "Type", "ObjectID", });
+        new java.lang.String[] { "ProcessID", "Clock", "Type", "ObjectID", "ReceiverProcessID", "NotifyID", });
     internal_static_synchro_InitRequestMessage_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_synchro_InitRequestMessage_fieldAccessorTable = new

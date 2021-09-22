@@ -5,7 +5,7 @@ package damian.tab.core.proto;
 
 /**
  * <pre>
- *req-rep socket - portmapper
+ *req-rep socket - damian.tab.portmapper
  * </pre>
  *
  * Protobuf type {@code synchro.InitRequestMessage}
@@ -313,7 +313,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   *req-rep socket - portmapper
+   *req-rep socket - damian.tab.portmapper
    * </pre>
    *
    * Protobuf type {@code synchro.InitRequestMessage}

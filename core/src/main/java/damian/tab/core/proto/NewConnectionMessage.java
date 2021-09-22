@@ -5,7 +5,7 @@ package damian.tab.core.proto;
 
 /**
  * <pre>
- *pub-sub socket - portmapper
+ *pub-sub socket - damian.tab.portmapper
  * </pre>
  *
  * Protobuf type {@code synchro.NewConnectionMessage}
@@ -285,7 +285,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   *pub-sub socket - portmapper
+   *pub-sub socket - damian.tab.portmapper
    * </pre>
    *
    * Protobuf type {@code synchro.NewConnectionMessage}

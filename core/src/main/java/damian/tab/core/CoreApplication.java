@@ -1,14 +1,14 @@
-package damian.tab.dsynchro;
+package damian.tab.core;
 
-import damian.tab.dsynchro.proto.InitRequestMessage;
+import damian.tab.core.proto.InitRequestMessage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DSynchroApplication {
+public class CoreApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DSynchroApplication.class, args);
+		SpringApplication.run(CoreApplication.class, args);
 		InitRequestMessage lol = InitRequestMessage.newBuilder()
 				.setAddress("lol")
 				.setReady(true)

@@ -1,3 +1,3 @@
 Generate Java code from protobuffer:
 
-```protoc -I=. --java_out=./src/main/java ./src/main/proto/message.proto```
+```protoc -I=. --java_out=./core/src/main/java ./core/src/main/proto/message.proto```

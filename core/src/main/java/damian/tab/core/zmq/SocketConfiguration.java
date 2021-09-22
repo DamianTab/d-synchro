@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.zeromq.ZContext;
 
 @Configuration
-public class SocketConfig {
+public class SocketConfiguration {
 
     @Bean
     public ZContext createZMQContext() {

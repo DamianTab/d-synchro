@@ -10,5 +10,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "config")
 public class EnvironmentProperties {
-    private String address;
+    private String publisherAddress;
+    private String portMapperAddress;
 }

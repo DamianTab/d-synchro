@@ -11,9 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 @Slf4j
@@ -52,7 +50,7 @@ public class PortMapperApplication {
 //		PUB
         SocketProxy proxy = SocketProxy.builder()
                 .context(zContext)
-                .address(properties.getAddress())
+                .address(properties.getPublisherAddress())
                 .type(SocketType.PUB)
                 .build();
 

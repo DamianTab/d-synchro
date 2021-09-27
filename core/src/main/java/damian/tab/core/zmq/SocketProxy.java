@@ -40,9 +40,9 @@ public class SocketProxy implements AutoCloseable {
         if (type == SocketType.REQ || type == SocketType.SUB) {
             socket = context.createSocket(type);
             socket.connect(bindAddress);
-//            if (type == SocketType.SUB){
-//                this.socket.subscribe("".getBytes());
-//            }
+            if (type == SocketType.SUB){
+                socket.subscribe("".getBytes());
+            }
         } else if (type == SocketType.REP || type == SocketType.PUB) {
             socket = context.createSocket(type);
             socket.bind(bindAddress);

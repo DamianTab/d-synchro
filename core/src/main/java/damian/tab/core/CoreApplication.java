@@ -24,7 +24,7 @@ public class CoreApplication {
 
 //    todo zewnetrzny thread do odpalania zadania z inicjalizacją ZCOntext oraz osobnego threada na odbieranie wiadomości - wtedy kazdy nowy monitor ma dokładnie tego samego ListenThreada
 //    todo jesli beda dochodzi nowe sockety to tylko i wylacznie w ListenThreadzie - thread safe
-//    todo jednorazowo przejsc po kolei zainicjalizowac komunikacje z portmapperem itp. - taka podstawowa sciezka - a dopiero potem
+//    todo jednorazowo przejsc po kolei zainicjalizowac komunikacje z portmapperem itp. - taka podstawowa sciezka - a dopiero potem reszta
 
     public static void main(String[] args) {
 //        todo 1
@@ -44,18 +44,31 @@ public class CoreApplication {
         ZContext zContext = context.getBean(ZContext.class);
 
 
+//        REQ
+//        SocketProxy proxy = SocketProxy.builder()
+//                .context(zContext)
+//                .address(properties.getAddress())
+//                .port(properties.getPort())
+//                .type(SocketType.REQ)
+//                .build();
+//
+//        while (!Thread.currentThread().isInterrupted()) {
+//            System.out.println("Sending request ");
+//            proxy.getSocket().send("WIADOMOSC".getBytes(ZMQ.CHARSET), 0);
+//            byte[] reply = proxy.getSocket().recv(0);
+//            System.out.println("Received: [" + new String(reply, ZMQ.CHARSET) + "]");
+//        }
+
+//        SUB
         SocketProxy proxy = SocketProxy.builder()
                 .context(zContext)
                 .address(properties.getAddress())
                 .port(properties.getPort())
-                .type(SocketType.REQ)
+                .type(SocketType.SUB)
                 .build();
 
         while (!Thread.currentThread().isInterrupted()) {
-            System.out.println("Sending request ");
-            proxy.getSocket().send("WIADOMOSC".getBytes(ZMQ.CHARSET), 0);
-            byte[] reply = proxy.getSocket().recv(0);
-            System.out.println("Received: [" + new String(reply, ZMQ.CHARSET) + "]");
+            System.out.println("Received: [" + proxy.getSocket().recvStr() + "]");
         }
 
 

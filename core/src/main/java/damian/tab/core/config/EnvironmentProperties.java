@@ -11,5 +11,4 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "config")
 public class EnvironmentProperties {
     private String address;
-    private String port;
 }

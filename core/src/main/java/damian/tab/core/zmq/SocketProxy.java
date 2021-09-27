@@ -6,22 +6,52 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-@Getter
+import java.io.*;
+
 public class SocketProxy implements AutoCloseable {
     private final ZContext context;
     private final ZMQ.Socket socket;
+    @Getter
     private final SocketType type;
+    @Getter
     private final String address;
-    private final String port;
 
     @Builder
-    public SocketProxy(ZContext context, SocketType type, String address, String port) {
+    public SocketProxy(ZContext context, SocketType type, String address) {
         this.context = context;
         this.type = type;
         this.address = address;
-        this.port = port;
         this.socket = initializeSocket();
     }
+
+
+    public void send(Object object) {
+        byte[] bytes = null;
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            objectOutputStream.writeObject(object);
+            objectOutputStream.flush();
+            bytes = byteArrayOutputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.socket.send(bytes);
+    }
+
+    public Object receive() {
+        Object object = null;
+        byte[] bytes = this.socket.recv();
+        try {
+            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            object = ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return object;
+    }
+
 
     @Override
     public void close() {
@@ -29,25 +59,18 @@ public class SocketProxy implements AutoCloseable {
     }
 
     private ZMQ.Socket initializeSocket() {
-        String bindAddress = new StringBuilder()
-                .append("tcp://")
-                .append(address)
-                .append(":")
-                .append(port)
-                .toString();
-
-        ZMQ.Socket socket = null;
+        ZMQ.Socket zmqSocket = null;
         if (type == SocketType.REQ || type == SocketType.SUB) {
-            socket = context.createSocket(type);
-            socket.connect(bindAddress);
-            if (type == SocketType.SUB){
-                socket.subscribe("".getBytes());
+            zmqSocket = context.createSocket(type);
+            zmqSocket.connect(this.address);
+            if (type == SocketType.SUB) {
+                zmqSocket.subscribe("".getBytes());
             }
         } else if (type == SocketType.REP || type == SocketType.PUB) {
-            socket = context.createSocket(type);
-            socket.bind(bindAddress);
+            zmqSocket = context.createSocket(type);
+            zmqSocket.bind(this.address);
         }
-        return socket;
+        return zmqSocket;
     }
 
 

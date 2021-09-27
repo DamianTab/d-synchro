@@ -34,42 +34,47 @@ public class CoreApplication {
                 .setAddress("lol")
                 .setReady(true)
                 .build();
-        System.out.println(lol);
 
         EnvironmentProperties properties = context.getBean(EnvironmentProperties.class);
         log.info(properties.getAddress());
-        log.info(properties.getPort());
 
 
         ZContext zContext = context.getBean(ZContext.class);
 
 
 //        REQ
-//        SocketProxy proxy = SocketProxy.builder()
-//                .context(zContext)
-//                .address(properties.getAddress())
-//                .port(properties.getPort())
-//                .type(SocketType.REQ)
-//                .build();
-//
-//        while (!Thread.currentThread().isInterrupted()) {
-//            System.out.println("Sending request ");
-//            proxy.getSocket().send("WIADOMOSC".getBytes(ZMQ.CHARSET), 0);
-//            byte[] reply = proxy.getSocket().recv(0);
-//            System.out.println("Received: [" + new String(reply, ZMQ.CHARSET) + "]");
-//        }
-
-//        SUB
         SocketProxy proxy = SocketProxy.builder()
                 .context(zContext)
                 .address(properties.getAddress())
-                .port(properties.getPort())
-                .type(SocketType.SUB)
+                .type(SocketType.REQ)
                 .build();
 
         while (!Thread.currentThread().isInterrupted()) {
-            System.out.println("Received: [" + proxy.getSocket().recvStr() + "]");
+            log.info("Sending request");
+            proxy.send("WIADOMOSC");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("Received: [ {} ]", proxy.receive());
         }
+
+//        SUB
+//        SocketProxy proxy = SocketProxy.builder()
+//                .context(zContext)
+//                .address(properties.getAddress())
+//                .type(SocketType.SUB)
+//                .build();
+//
+//        while (!Thread.currentThread().isInterrupted()) {
+//            log.info("Received: [ {} ]", proxy.receive());
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
 
 

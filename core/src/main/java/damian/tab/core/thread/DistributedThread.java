@@ -30,7 +30,7 @@ public final class DistributedThread extends Thread {
 
     @Override
     public synchronized void start() {
-        log.debug("Starting Distributed Thread -- {}", this.getName());
+        log.info("Starting Distributed Thread -- {}", this.getName());
         super.start();
     }
 }

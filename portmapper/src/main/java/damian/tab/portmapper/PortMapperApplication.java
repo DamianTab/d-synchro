@@ -21,39 +21,34 @@ public class PortMapperApplication {
         InitRequestMessage lol = InitRequestMessage.newBuilder()
                 .setAddress("lol")
                 .build();
-        System.out.println(lol);
 
         EnvironmentProperties properties = context.getBean(EnvironmentProperties.class);
         log.info(properties.getAddress());
-        log.info(properties.getPort());
 
         ZContext zContext = context.getBean(ZContext.class);
 
 //	REP
-//		SocketProxy proxy = SocketProxy.builder()
-//				.context(zContext)
-//				.address(properties.getAddress())
-//				.port(properties.getPort())
-//				.type(SocketType.REP)
-//				.build();
-//
-//		while (!Thread.currentThread().isInterrupted()) {
-//			byte[] reply = proxy.getSocket().recv(0);
-//			System.out.println("Received: [" + new String(reply, ZMQ.CHARSET) + "]");
-//			proxy.getSocket().send("Hello, world!".getBytes(ZMQ.CHARSET), 0);
-//		}
+		SocketProxy proxy = SocketProxy.builder()
+				.context(zContext)
+				.address(properties.getAddress())
+				.type(SocketType.REP)
+				.build();
+
+		while (!Thread.currentThread().isInterrupted()) {
+			log.info("Received: [ {} ]", proxy.receive());
+			proxy.send("Hello, world!");
+		}
 
 //		PUB
-        SocketProxy proxy = SocketProxy.builder()
-                .context(zContext)
-                .address(properties.getAddress())
-                .port(properties.getPort())
-                .type(SocketType.PUB)
-                .build();
-
-        while (!Thread.currentThread().isInterrupted()) {
-            proxy.getSocket().send("Hello, world!");
-        }
+//        SocketProxy proxy = SocketProxy.builder()
+//                .context(zContext)
+//                .address(properties.getAddress())
+//                .type(SocketType.PUB)
+//                .build();
+//
+//        while (!Thread.currentThread().isInterrupted()) {
+//            proxy.send("Hello, world!");
+//        }
 
 
     }

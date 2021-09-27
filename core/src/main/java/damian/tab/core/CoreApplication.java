@@ -3,20 +3,12 @@ package damian.tab.core;
 import damian.tab.core.config.EnvironmentProperties;
 import damian.tab.core.proto.InitRequestMessage;
 import damian.tab.core.thread.DistributedThread;
-import damian.tab.core.thread.DistributedThreadFactory;
-import damian.tab.core.zmq.SocketProxy;
+import damian.tab.core.thread.ThreadConfiguration;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.zeromq.SocketType;
 import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @SpringBootApplication
@@ -55,15 +47,15 @@ public class CoreApplication {
 //        }
 
 //        SUB
-        SocketProxy proxy = SocketProxy.builder()
-                .context(zContext)
-                .address(properties.getAddress())
-                .type(SocketType.SUB)
-                .build();
-
-        while (!Thread.currentThread().isInterrupted()) {
-            log.info("Received: [ {} ]", proxy.receive());
-        }
+//        SocketProxy proxy = SocketProxy.builder()
+//                .context(zContext)
+//                .address(properties.getAddress())
+//                .type(SocketType.SUB)
+//                .build();
+//
+//        while (!Thread.currentThread().isInterrupted()) {
+//            log.info("Received: [ {} ]", proxy.receive());
+//        }
 
 
 
@@ -72,14 +64,15 @@ public class CoreApplication {
 //        executor.execute(new DistributedThread());
 
 //        todo 3
-//        Runnable runnable = () -> System.out.println("lol");
-//        Runnable runnable1 = () -> System.out.println("wtf");
-//
-//        DistributedThreadFactory factory = context.getBean(DistributedThreadFactory.class);
-//        DistributedThread thread = factory.getObject(runnable);
-//        DistributedThread thread1 = factory.getObject(runnable1);
-//        thread.start();
-//        thread1.start();
+        Runnable runnable = () -> System.out.println("lol");
+        Runnable runnable1 = () -> System.out.println("wtf");
+
+        ThreadConfiguration factory = context.getBean(ThreadConfiguration.class);
+        DistributedThread thread = factory.createDistributedThread(runnable);
+        DistributedThread thread1 = factory.createDistributedThread(runnable1);
+        thread.start();
+        thread1.start();
+
 
     }
 

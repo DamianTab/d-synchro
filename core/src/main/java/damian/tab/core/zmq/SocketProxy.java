@@ -8,12 +8,11 @@ import org.zeromq.ZMQ;
 
 import java.io.*;
 
+@Getter
 public class SocketProxy implements AutoCloseable {
     private final ZContext context;
     private final ZMQ.Socket socket;
-    @Getter
     private final SocketType type;
-    @Getter
     private final String address;
 
     @Builder

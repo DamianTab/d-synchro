@@ -3,6 +3,7 @@ package damian.tab.portmapper;
 import damian.tab.core.CoreApplication;
 import damian.tab.core.config.EnvironmentProperties;
 import damian.tab.core.proto.InitRequestMessage;
+import damian.tab.core.proto.SynchroMessage;
 import damian.tab.core.zmq.SocketProxy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -12,44 +13,60 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 @Slf4j
 @SpringBootApplication
 public class PortMapperApplication {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(CoreApplication.class, args);
-        InitRequestMessage lol = InitRequestMessage.newBuilder()
-                .setAddress("lol")
-                .build();
-
         EnvironmentProperties properties = context.getBean(EnvironmentProperties.class);
-        log.info(properties.getAddress());
-
         ZContext zContext = context.getBean(ZContext.class);
 
-//	REP
-		SocketProxy proxy = SocketProxy.builder()
-				.context(zContext)
-				.address(properties.getAddress())
-				.type(SocketType.REP)
+		InitRequestMessage message = InitRequestMessage.newBuilder()
+				.setAddress("lol")
 				.build();
 
-		while (!Thread.currentThread().isInterrupted()) {
-			log.info("Received: [ {} ]", proxy.receive());
-			proxy.send("Hello, world!");
-		}
+        SynchroMessage message1 = SynchroMessage.newBuilder()
+                .setProcessID(1)
+                .addAllClock(Arrays.asList(1,2,3,4,5))
+                .setType(SynchroMessage.MessageType.LOCK_REQ)
+                .setObjectID("22")
+                .addReceiverProcessID(3)
+                .build();
+
+//	REP
+//		SocketProxy proxy = SocketProxy.builder()
+//				.context(zContext)
+//				.address(properties.getAddress())
+//				.type(SocketType.REP)
+//				.build();
+//
+//		while (!Thread.currentThread().isInterrupted()) {
+//			log.info("Received: [ {} ]", proxy.receive());
+//			proxy.send("Hello, world!");
+//		}
 
 //		PUB
-//        SocketProxy proxy = SocketProxy.builder()
-//                .context(zContext)
-//                .address(properties.getAddress())
-//                .type(SocketType.PUB)
-//                .build();
-//
-//        while (!Thread.currentThread().isInterrupted()) {
-//            proxy.send("Hello, world!");
-//        }
+        SocketProxy proxy = SocketProxy.builder()
+                .context(zContext)
+                .address(properties.getAddress())
+                .type(SocketType.PUB)
+                .build();
 
+        while (!Thread.currentThread().isInterrupted()) {
+        	log.info("Sending ...");
+            proxy.send(message1);
+//            proxy.send("Hello, world!");
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 

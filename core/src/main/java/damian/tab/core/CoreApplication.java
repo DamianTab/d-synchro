@@ -27,54 +27,43 @@ public class CoreApplication {
 //    todo jednorazowo przejsc po kolei zainicjalizowac komunikacje z portmapperem itp. - taka podstawowa sciezka - a dopiero potem reszta
 
     public static void main(String[] args) {
-//        todo 1
-
         ConfigurableApplicationContext context = SpringApplication.run(CoreApplication.class, args);
-        InitRequestMessage lol = InitRequestMessage.newBuilder()
+        EnvironmentProperties properties = context.getBean(EnvironmentProperties.class);
+        ZContext zContext = context.getBean(ZContext.class);
+
+        InitRequestMessage message = InitRequestMessage.newBuilder()
                 .setAddress("lol")
                 .setReady(true)
                 .build();
 
-        EnvironmentProperties properties = context.getBean(EnvironmentProperties.class);
-        log.info(properties.getAddress());
-
-
-        ZContext zContext = context.getBean(ZContext.class);
-
-
 //        REQ
-        SocketProxy proxy = SocketProxy.builder()
-                .context(zContext)
-                .address(properties.getAddress())
-                .type(SocketType.REQ)
-                .build();
-
-        while (!Thread.currentThread().isInterrupted()) {
-            log.info("Sending request");
-            proxy.send("WIADOMOSC");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            log.info("Received: [ {} ]", proxy.receive());
-        }
-
-//        SUB
 //        SocketProxy proxy = SocketProxy.builder()
 //                .context(zContext)
 //                .address(properties.getAddress())
-//                .type(SocketType.SUB)
+//                .type(SocketType.REQ)
 //                .build();
 //
 //        while (!Thread.currentThread().isInterrupted()) {
-//            log.info("Received: [ {} ]", proxy.receive());
+//            log.info("Sending request");
+//            proxy.send("WIADOMOSC");
 //            try {
 //                Thread.sleep(1000);
 //            } catch (InterruptedException e) {
 //                e.printStackTrace();
 //            }
+//            log.info("Received: [ {} ]", proxy.receive());
 //        }
+
+//        SUB
+        SocketProxy proxy = SocketProxy.builder()
+                .context(zContext)
+                .address(properties.getAddress())
+                .type(SocketType.SUB)
+                .build();
+
+        while (!Thread.currentThread().isInterrupted()) {
+            log.info("Received: [ {} ]", proxy.receive());
+        }
 
 
 

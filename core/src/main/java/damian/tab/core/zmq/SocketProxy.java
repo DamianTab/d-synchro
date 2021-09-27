@@ -7,7 +7,7 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 @Getter
-public class SocketProxy {
+public class SocketProxy implements AutoCloseable {
     private final ZContext context;
     private final ZMQ.Socket socket;
     private final SocketType type;
@@ -20,7 +20,15 @@ public class SocketProxy {
         this.type = type;
         this.address = address;
         this.port = port;
+        this.socket = initializeSocket();
+    }
 
+    @Override
+    public void close() {
+        this.socket.close();
+    }
+
+    private ZMQ.Socket initializeSocket() {
         String bindAddress = new StringBuilder()
                 .append("tcp://")
                 .append(address)
@@ -28,16 +36,19 @@ public class SocketProxy {
                 .append(port)
                 .toString();
 
-        if (type == SocketType.REQ){
-            this.socket = context.createSocket(type);
-            this.socket.connect(bindAddress);
-
-        } else if (type == SocketType.REP) {
-            this.socket = context.createSocket(type);
-            this.socket.bind(bindAddress);
-        }else {
-            this.socket = null;
+        ZMQ.Socket socket = null;
+        if (type == SocketType.REQ || type == SocketType.SUB) {
+            socket = context.createSocket(type);
+            socket.connect(bindAddress);
+//            if (type == SocketType.SUB){
+//                this.socket.subscribe("".getBytes());
+//            }
+        } else if (type == SocketType.REP || type == SocketType.PUB) {
+            socket = context.createSocket(type);
+            socket.bind(bindAddress);
         }
-
+        return socket;
     }
+
+
 }

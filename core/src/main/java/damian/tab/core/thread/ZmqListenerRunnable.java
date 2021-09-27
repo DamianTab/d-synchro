@@ -7,13 +7,13 @@ import org.zeromq.ZPoller;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class ZmqListenerThread implements Runnable, AutoCloseable {
+abstract class ZmqListenerRunnable implements Runnable, AutoCloseable {
     protected final ZContext zContext;
     protected final ZPoller zPoller;
     protected final List<SocketProxy> subscriptions;
     protected final SocketProxy publisher;
 
-    public ZmqListenerThread(ZContext zContext, SocketProxy publisher) {
+    public ZmqListenerRunnable(ZContext zContext, SocketProxy publisher) {
         this.zContext = zContext;
         this.publisher = publisher;
         this.zPoller = new ZPoller(zContext);
@@ -26,7 +26,7 @@ abstract class ZmqListenerThread implements Runnable, AutoCloseable {
         publisher.close();
     }
 
-    protected void registerSocket(SocketProxy socketProxy){
+    protected void registerSocket(SocketProxy socketProxy) {
         this.zPoller.register(socketProxy.getSocket(), ZPoller.POLLIN);
     }
 }

@@ -27,25 +27,25 @@ public class ThreadConfiguration {
      */
     @Bean
     @Scope(value = "prototype")
-    public ClientZmqThread createClientZmqThread(ZContext context) {
+    public ClientListenerRunnable createClientListenerRunnable(ZContext context) {
         SocketProxy publisher = socketDeliverer.createPublisher(context);
         SocketProxy initializationRequester = socketDeliverer.createPortMapperRequester(context);
-        return new ClientZmqThread(context, publisher, initializationRequester);
+        return new ClientListenerRunnable(context, publisher, initializationRequester);
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    public PortMapperListenerRunnable createPortMapperListenerRunnable() {
+        ZContext context = zContextConfiguration.createZMQContext();
+        SocketProxy publisher = socketDeliverer.createPublisher(context);
+        SocketProxy initializationReplayer = socketDeliverer.createPortMapperReplayer(context);
+        return new PortMapperListenerRunnable(context, publisher, initializationReplayer);
     }
 
     @Bean
     @Scope(value = "prototype")
     public DistributedThread createDistributedThread(Runnable runnable) {
         ZContext context = zContextConfiguration.createZMQContext();
-        return new DistributedThread(runnable, context, createClientZmqThread(context));
-    }
-
-    @Bean
-    @Scope(value = "prototype")
-    public PortMapperZmqThread createPortMapperZMqThread() {
-        ZContext context = zContextConfiguration.createZMQContext();
-        SocketProxy publisher = socketDeliverer.createPublisher(context);
-        SocketProxy initializationReplayer = socketDeliverer.createPortMapperReplayer(context);
-        return new PortMapperZmqThread(context, publisher, initializationReplayer);
+        return new DistributedThread(runnable, context, createClientListenerRunnable(context));
     }
 }

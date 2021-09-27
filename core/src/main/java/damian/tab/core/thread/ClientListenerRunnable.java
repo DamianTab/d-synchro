@@ -1,21 +1,22 @@
 package damian.tab.core.thread;
 
 import damian.tab.core.zmq.SocketProxy;
+import lombok.extern.slf4j.Slf4j;
 import org.zeromq.ZContext;
 
-class ClientZmqThread extends ZmqListenerThread{
+@Slf4j
+public class ClientListenerRunnable extends ZmqListenerRunnable {
 
     private final SocketProxy initializationRequester;
     private SocketProxy portMapperSubscriber;
 
-    public ClientZmqThread(ZContext zContext, SocketProxy publisher, SocketProxy initializationRequester) {
+    public ClientListenerRunnable(ZContext zContext, SocketProxy publisher, SocketProxy initializationRequester) {
         super(zContext, publisher);
         this.initializationRequester = initializationRequester;
     }
 
-    public void connectToPortMapper(){
+    public void initialize(){
         //todo tutaj zrobic to łączenie
-        initializationRequester.close();
     }
 
     @Override
@@ -26,6 +27,9 @@ class ClientZmqThread extends ZmqListenerThread{
     @Override
     public void close() {
         super.close();
-        portMapperSubscriber.close();
+        if (portMapperSubscriber != null){
+            portMapperSubscriber.close();
+        }
+        log.info("Closed ClientListenerRunnable.");
     }
 }

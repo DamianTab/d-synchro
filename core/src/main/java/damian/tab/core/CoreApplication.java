@@ -3,7 +3,7 @@ package damian.tab.core;
 import damian.tab.core.config.EnvironmentProperties;
 import damian.tab.core.proto.InitRequestMessage;
 import damian.tab.core.thread.DistributedThread;
-import damian.tab.core.thread.PortMapperZmqThread;
+import damian.tab.core.thread.PortMapperListenerRunnable;
 import damian.tab.core.thread.ThreadConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -59,7 +59,6 @@ public class CoreApplication {
 //        }
 
 
-
 //        todo 2
 //        ExecutorService executor = Executors.newSingleThreadExecutor();
 //        executor.execute(new DistributedThread());
@@ -73,7 +72,8 @@ public class CoreApplication {
         DistributedThread thread1 = factory.createDistributedThread(runnable1);
         thread.start();
         thread1.start();
-
+//        PortMapperListenerRunnable portMapperListenerRunnable = factory.createPortMapperListenerRunnable();
+//        new Thread(portMapperListenerRunnable).start();
 
     }
 

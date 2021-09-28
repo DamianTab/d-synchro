@@ -59,17 +59,16 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
 //        New Client info from PortMapper
             while (zPoller.isReadable(portMapperSubscriber.getSocket())) {
                 NewConnectionMessage newConnectionMessage = (NewConnectionMessage) proxyHandler.receive(portMapperSubscriber);
-                if (!newConnectionMessage.getAddress().equals(publisher.getAddress())) {
+                if (isNotThisAndNotInSubscriptions(newConnectionMessage.getAddress())) {
                     addNewSubscriberAndRegister(newConnectionMessage.getAddress());
                 }
             }
 //            Handle SynchroMessage - lock/unlock or wait/notify from other clients
             subscriptions.forEach(subscriber -> {
                 while (zPoller.isReadable(subscriber.getSocket())) {
-                    SynchroMessage synchroMessage = (SynchroMessage)  proxyHandler.receive(subscriber);
+                    SynchroMessage synchroMessage = (SynchroMessage) proxyHandler.receive(subscriber);
                     log.info("Received synchro message: {}", synchroMessage);
                     //                    todo handle ricart-agrawali
-
                 }
             });
         }
@@ -101,10 +100,17 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
         responseMessage.getAddressesList().forEach(this::addNewSubscriberAndRegister);
     }
 
-    public void addNewSubscriberAndRegister(String address) {
+    private void addNewSubscriberAndRegister(String address) {
         SocketProxy subscriber = SocketProxySubscriberInitializer.createSubscriber(zContext, address);
         subscriptions.add(subscriber);
         this.registerSocket(subscriber);
         log.info("Added new client-subscriber with address {}", address);
+    }
+
+    private boolean isNotThisAndNotInSubscriptions(String address) {
+        return !address.equals(publisher.getAddress())
+                && subscriptions.stream()
+                .map(SocketProxy::getAddress)
+                .noneMatch(socketAddress -> socketAddress.equals(address));
     }
 }

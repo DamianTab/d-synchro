@@ -4,6 +4,7 @@ import damian.tab.core.proto.InitRequestMessage;
 import damian.tab.core.proto.InitResponseMessage;
 import damian.tab.core.proto.NewConnectionMessage;
 import damian.tab.core.zmq.SocketProxy;
+import damian.tab.core.zmq.SocketProxyHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.zeromq.ZContext;
 import org.zeromq.ZPoller;
@@ -14,12 +15,14 @@ import java.util.List;
 //todo PortMapper also informs about disconnecting client
 @Slf4j
 public class PortMapperListenerRunnable extends ZmqListenerRunnable {
+    private final SocketProxyHandler proxyHandler;
     private final SocketProxy initializationReplayer;
     private final List<String> clientAddresses;
     private int counter = 0;
 
-    public PortMapperListenerRunnable(ZContext zContext, SocketProxy publisher, SocketProxy initializationReplayer) {
+    public PortMapperListenerRunnable(ZContext zContext, SocketProxy publisher, SocketProxyHandler proxyHandler, SocketProxy initializationReplayer) {
         super(zContext, publisher);
+        this.proxyHandler = proxyHandler;
         this.initializationReplayer = initializationReplayer;
         clientAddresses = new ArrayList<>();
     }
@@ -33,7 +36,7 @@ public class PortMapperListenerRunnable extends ZmqListenerRunnable {
             zPoller.poll(-1L);
 //        New Client
             while (zPoller.isReadable(initializationReplayer.getSocket())) {
-                InitRequestMessage requestMessage = (InitRequestMessage) initializationReplayer.receive();
+                InitRequestMessage requestMessage = (InitRequestMessage) proxyHandler.receive(initializationReplayer);
                 handleNewClientMessage(requestMessage);
             }
         }
@@ -46,22 +49,22 @@ public class PortMapperListenerRunnable extends ZmqListenerRunnable {
         log.info("Closed PortMapperListenerRunnable.");
     }
 
-    private void handleNewClientMessage(InitRequestMessage requestMessage){
-        if (requestMessage.getReady()){
+    private void handleNewClientMessage(InitRequestMessage requestMessage) {
+        if (requestMessage.getReady()) {
             clientAddresses.add(requestMessage.getAddress());
             NewConnectionMessage message = NewConnectionMessage.newBuilder()
                     .setAddress(requestMessage.getAddress())
                     .build();
-            publisher.send(message);
-            initializationReplayer.send(message);
+            proxyHandler.send(publisher, message);
+            proxyHandler.send(initializationReplayer, message);
             log.info("Added new client with address: {}", requestMessage.getAddress());
-        }else{
+        } else {
             InitResponseMessage message = InitResponseMessage.newBuilder()
                     .setProcessID(++counter)
                     .setPortMapperAddress(publisher.getAddress())
                     .addAllAddresses(clientAddresses)
                     .build();
-            initializationReplayer.send(message);
+            proxyHandler.send(initializationReplayer, message);
         }
     }
 }

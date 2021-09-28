@@ -5,6 +5,7 @@ import damian.tab.core.proto.InitResponseMessage;
 import damian.tab.core.proto.NewConnectionMessage;
 import damian.tab.core.proto.SynchroMessage;
 import damian.tab.core.zmq.SocketProxy;
+import damian.tab.core.zmq.SocketProxyHandler;
 import damian.tab.core.zmq.SocketProxySubscriberInitializer;
 import lombok.extern.slf4j.Slf4j;
 import org.zeromq.ZContext;
@@ -15,14 +16,16 @@ import java.util.List;
 @Slf4j
 public class ClientListenerRunnable extends ZmqListenerRunnable {
 
+    private final SocketProxyHandler proxyHandler;
     private final List<SocketProxy> subscriptions;
     private final SocketProxy initializationRequester;
 
     private SocketProxy portMapperSubscriber;
     private int processId;
 
-    public ClientListenerRunnable(ZContext zContext, SocketProxy publisher, SocketProxy initializationRequester) {
+    public ClientListenerRunnable(ZContext zContext, SocketProxy publisher, SocketProxyHandler proxyHandler, SocketProxy initializationRequester) {
         super(zContext, publisher);
+        this.proxyHandler = proxyHandler;
         this.initializationRequester = initializationRequester;
         this.subscriptions = new ArrayList<>();
     }
@@ -33,13 +36,13 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
 //        Send 1st message
         sendRequestMessageToPortMapper(false);
 //        Receive PortMapper message with process configuration
-        InitResponseMessage responseMessage = (InitResponseMessage) initializationRequester.receive();
+        InitResponseMessage responseMessage = (InitResponseMessage) proxyHandler.receive(initializationRequester);
         log.info("Received response from portmapper: {}", responseMessage);
         configureProcessIdAndSubscribersFromMessage(responseMessage);
 //        Send 2nd message to confirm
         sendRequestMessageToPortMapper(true);
 //        Confirm from PortMapper to end 4-way handshake
-        NewConnectionMessage newConnectionMessage = (NewConnectionMessage) initializationRequester.receive();
+        NewConnectionMessage newConnectionMessage = (NewConnectionMessage) proxyHandler.receive(initializationRequester);
         if (!newConnectionMessage.getAddress().equals(publisher.getAddress())) {
             throw new RuntimeException("Receive wrong address from PortMapper - fault in portMapper configuration.");
         }
@@ -55,7 +58,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
             zPoller.poll(-1L);
 //        New Client info from PortMapper
             while (zPoller.isReadable(portMapperSubscriber.getSocket())) {
-                NewConnectionMessage newConnectionMessage = (NewConnectionMessage) portMapperSubscriber.receive();
+                NewConnectionMessage newConnectionMessage = (NewConnectionMessage) proxyHandler.receive(portMapperSubscriber);
                 if (!newConnectionMessage.getAddress().equals(publisher.getAddress())) {
                     addNewSubscriberAndRegister(newConnectionMessage.getAddress());
                 }
@@ -63,7 +66,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
 //            Handle SynchroMessage - lock/unlock or wait/notify from other clients
             subscriptions.forEach(subscriber -> {
                 while (zPoller.isReadable(subscriber.getSocket())) {
-                    SynchroMessage synchroMessage = (SynchroMessage) subscriber.receive();
+                    SynchroMessage synchroMessage = (SynchroMessage)  proxyHandler.receive(subscriber);
                     log.info("Received synchro message: {}", synchroMessage);
                     //                    todo handle ricart-agrawali
 
@@ -88,8 +91,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
                 .setAddress(publisher.getAddress())
                 .setReady(confirmingMessage)
                 .build();
-        initializationRequester.send(requestMessage);
-
+        proxyHandler.send(initializationRequester, requestMessage);
     }
 
     private void configureProcessIdAndSubscribersFromMessage(InitResponseMessage responseMessage) {

@@ -3,6 +3,7 @@ package damian.tab.core.thread;
 import damian.tab.core.task.DistributedTask;
 import damian.tab.core.zmq.SocketProxy;
 import damian.tab.core.zmq.SocketProxyDelivererService;
+import damian.tab.core.zmq.SocketProxyHandler;
 import damian.tab.core.zmq.ZContextConfiguration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.zeromq.ZContext;
 @RequiredArgsConstructor
 public class ThreadConfiguration {
 
+    private final SocketProxyHandler proxyHandler;
     private final ZContextConfiguration zContextConfiguration;
     private final SocketProxyDelivererService socketDeliverer;
 
@@ -25,7 +27,7 @@ public class ThreadConfiguration {
         ZContext context = zContextConfiguration.createZMQContext();
         SocketProxy publisher = socketDeliverer.createPublisher(context);
         SocketProxy initializationRequester = socketDeliverer.createPortMapperRequester(context);
-        return new ClientListenerRunnable(context, publisher, initializationRequester);
+        return new ClientListenerRunnable(context, publisher, proxyHandler, initializationRequester);
     }
 
     @Bean
@@ -34,7 +36,7 @@ public class ThreadConfiguration {
         ZContext context = zContextConfiguration.createZMQContext();
         SocketProxy publisher = socketDeliverer.createPublisher(context);
         SocketProxy initializationReplayer = socketDeliverer.createPortMapperReplayer(context);
-        return new PortMapperListenerRunnable(context, publisher, initializationReplayer);
+        return new PortMapperListenerRunnable(context, publisher, proxyHandler, initializationReplayer);
     }
 
     @Bean

@@ -6,8 +6,6 @@ import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-import java.io.*;
-
 @Getter
 public class SocketProxy implements AutoCloseable {
     private final ZContext context;
@@ -22,35 +20,6 @@ public class SocketProxy implements AutoCloseable {
         this.socket = initializeSocket(address);
         this.address = initializeAddress(this.socket, address);
     }
-
-//todo send and receive move to service
-    public void send(Object object) {
-        byte[] bytes = null;
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(object);
-            objectOutputStream.flush();
-            bytes = byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        this.socket.send(bytes);
-    }
-
-    public Object receive() {
-        Object object = null;
-        byte[] bytes = this.socket.recv();
-        try {
-            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            object = ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return object;
-    }
-
 
     @Override
     public void close() {
@@ -72,10 +41,8 @@ public class SocketProxy implements AutoCloseable {
         return zmqSocket;
     }
 
-    private String initializeAddress(ZMQ.Socket zmqSocket, String address){
+    private String initializeAddress(ZMQ.Socket zmqSocket, String address) {
         String port = address.substring(address.lastIndexOf(':') + 1);
         return port.equals("0") ? zmqSocket.getLastEndpoint() : address;
     }
-
-
 }

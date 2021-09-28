@@ -1,45 +1,39 @@
 package damian.tab.core.thread;
 
+import damian.tab.core.task.DistributedTask;
 import lombok.extern.slf4j.Slf4j;
-import org.zeromq.ZContext;
-@Slf4j
-public class DistributedThread extends Thread implements AutoCloseable {
 
-    private final ZContext zContext;
+import java.util.concurrent.Executors;
+
+@Slf4j
+public class DistributedThread implements Runnable, AutoCloseable {
+
+    private final DistributedTask distributedTask;
     private final ClientListenerRunnable clientListenerThread;
 
-//    /**
-//     * Constructor for non-spring users. For Spring users bean -> @DistributedThreadFactory
-//     *
-//     * @param target Runnable interface with task to execute
-//     */
-//    public DistributedThread(Runnable target) {
-//        super(target);
-//        this.zContext = new ZContext();
-//    }
-
     /**
-     * Constructor for Spring users
-     *  @param target   Runnable interface with task to execute
-     * @param zContext Context for zmq
+     *
+     * @param distributedTask Runnable interface with task to execute
      * @param clientListenerThread
      */
-    DistributedThread(Runnable target, ZContext zContext, ClientListenerRunnable clientListenerThread) {
-        super(target);
-        this.zContext = zContext;
+    DistributedThread(DistributedTask distributedTask, ClientListenerRunnable clientListenerThread) {
+        this.distributedTask = distributedTask;
         this.clientListenerThread = clientListenerThread;
+        distributedTask.assignClientListener(clientListenerThread);
     }
 
     @Override
-    public synchronized void start() {
-        log.info("Starting Distributed Thread -- {}", this.getName());
+    public void run() {
+        log.info("Starting Distributed Thread.");
         clientListenerThread.initializeProcessWithPortMapper();
-        super.start();
+        //todo graceful shutdown
+        Executors.newSingleThreadExecutor().execute(clientListenerThread);
+        distributedTask.run();
     }
 
     @Override
     public void close() {
         clientListenerThread.close();
-        log.info("Closed {}", this.getName());
+        log.info("Closed Distributed Thread.");
     }
 }

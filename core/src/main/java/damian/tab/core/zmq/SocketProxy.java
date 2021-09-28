@@ -23,7 +23,7 @@ public class SocketProxy implements AutoCloseable {
         this.address = initializeAddress(this.socket, address);
     }
 
-
+//todo send and receive move to service
     public void send(Object object) {
         byte[] bytes = null;
         try {
@@ -35,7 +35,7 @@ public class SocketProxy implements AutoCloseable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        boolean lol = this.socket.send(bytes);
+        this.socket.send(bytes);
     }
 
     public Object receive() {

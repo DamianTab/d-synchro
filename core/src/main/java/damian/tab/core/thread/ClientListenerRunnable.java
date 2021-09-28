@@ -3,6 +3,7 @@ package damian.tab.core.thread;
 import damian.tab.core.proto.InitRequestMessage;
 import damian.tab.core.proto.InitResponseMessage;
 import damian.tab.core.proto.NewConnectionMessage;
+import damian.tab.core.proto.SynchroMessage;
 import damian.tab.core.zmq.SocketProxy;
 import damian.tab.core.zmq.SocketProxySubscriberInitializer;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +15,9 @@ import java.util.List;
 @Slf4j
 public class ClientListenerRunnable extends ZmqListenerRunnable {
 
-    protected final List<SocketProxy> subscriptions;
+    private final List<SocketProxy> subscriptions;
     private final SocketProxy initializationRequester;
+
     private SocketProxy portMapperSubscriber;
     private int processId;
 
@@ -25,6 +27,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
         this.subscriptions = new ArrayList<>();
     }
 
+    //todo throw error if address have been already taken
     public void initializeProcessWithPortMapper() {
         log.info("Initialize ClientListenerRunnable with PortMapper.");
 //        Send 1st message
@@ -32,7 +35,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
 //        Receive PortMapper message with process configuration
         InitResponseMessage responseMessage = (InitResponseMessage) initializationRequester.receive();
         log.info("Received response from portmapper: {}", responseMessage);
-        configureProcessIdAndSubscribers(responseMessage);
+        configureProcessIdAndSubscribersFromMessage(responseMessage);
 //        Send 2nd message to confirm
         sendRequestMessageToPortMapper(true);
 //        Confirm from PortMapper to end 4-way handshake
@@ -47,9 +50,27 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
     @Override
     public void run() {
         log.info("Started ClientListenerRunnable thread.");
-        //todo tutaj zrobic nasluchiwanie klienta
 
-//        todo odbierajac swoj adres z portmappera powinien ignorowac
+        while (!Thread.interrupted()) {
+            zPoller.poll(-1L);
+//        New Client info from PortMapper
+            while (zPoller.isReadable(portMapperSubscriber.getSocket())) {
+                NewConnectionMessage newConnectionMessage = (NewConnectionMessage) portMapperSubscriber.receive();
+                if (!newConnectionMessage.getAddress().equals(publisher.getAddress())) {
+                    addNewSubscriberAndRegister(newConnectionMessage.getAddress());
+                }
+            }
+//            Handle SynchroMessage - lock/unlock or wait/notify from other clients
+            subscriptions.forEach(subscriber -> {
+                while (zPoller.isReadable(subscriber.getSocket())) {
+                    SynchroMessage synchroMessage = (SynchroMessage) subscriber.receive();
+                    log.info("Received synchro message: {}", synchroMessage);
+                    //                    todo handle ricart-agrawali
+
+                }
+            });
+        }
+
     }
 
     @Override
@@ -71,13 +92,17 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
 
     }
 
-    private void configureProcessIdAndSubscribers(InitResponseMessage responseMessage) {
+    private void configureProcessIdAndSubscribersFromMessage(InitResponseMessage responseMessage) {
         processId = responseMessage.getProcessID();
         portMapperSubscriber = SocketProxySubscriberInitializer.createSubscriber(zContext, responseMessage.getPortMapperAddress());
         this.registerSocket(portMapperSubscriber);
-        responseMessage.getAddressesList().forEach(address -> {
-            SocketProxy subscriber = SocketProxySubscriberInitializer.createSubscriber(zContext, address);
-            this.registerSocket(subscriber);
-        });
+        responseMessage.getAddressesList().forEach(this::addNewSubscriberAndRegister);
+    }
+
+    public void addNewSubscriberAndRegister(String address) {
+        SocketProxy subscriber = SocketProxySubscriberInitializer.createSubscriber(zContext, address);
+        subscriptions.add(subscriber);
+        this.registerSocket(subscriber);
+        log.info("Added new client-subscriber with address {}", address);
     }
 }

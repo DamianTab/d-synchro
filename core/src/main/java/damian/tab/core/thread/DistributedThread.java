@@ -3,7 +3,7 @@ package damian.tab.core.thread;
 import lombok.extern.slf4j.Slf4j;
 import org.zeromq.ZContext;
 @Slf4j
-public final class DistributedThread extends Thread implements AutoCloseable {
+public class DistributedThread extends Thread implements AutoCloseable {
 
     private final ZContext zContext;
     private final ClientListenerRunnable clientListenerThread;
@@ -33,7 +33,7 @@ public final class DistributedThread extends Thread implements AutoCloseable {
     @Override
     public synchronized void start() {
         log.info("Starting Distributed Thread -- {}", this.getName());
-        clientListenerThread.initialize();
+        clientListenerThread.initializeProcessWithPortMapper();
         super.start();
     }
 

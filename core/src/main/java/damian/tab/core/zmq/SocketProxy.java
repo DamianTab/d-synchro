@@ -19,8 +19,8 @@ public class SocketProxy implements AutoCloseable {
     public SocketProxy(ZContext context, SocketType type, String address) {
         this.context = context;
         this.type = type;
-        this.address = address;
-        this.socket = initializeSocket();
+        this.socket = initializeSocket(address);
+        this.address = initializeAddress(this.socket, address);
     }
 
 
@@ -35,7 +35,7 @@ public class SocketProxy implements AutoCloseable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.socket.send(bytes);
+        boolean lol = this.socket.send(bytes);
     }
 
     public Object receive() {
@@ -57,19 +57,24 @@ public class SocketProxy implements AutoCloseable {
         this.socket.close();
     }
 
-    private ZMQ.Socket initializeSocket() {
+    private ZMQ.Socket initializeSocket(String address) {
         ZMQ.Socket zmqSocket = null;
         if (type == SocketType.REQ || type == SocketType.SUB) {
             zmqSocket = context.createSocket(type);
-            zmqSocket.connect(this.address);
+            zmqSocket.connect(address);
             if (type == SocketType.SUB) {
                 zmqSocket.subscribe("".getBytes());
             }
         } else if (type == SocketType.REP || type == SocketType.PUB) {
             zmqSocket = context.createSocket(type);
-            zmqSocket.bind(this.address);
+            zmqSocket.bind(address);
         }
         return zmqSocket;
+    }
+
+    private String initializeAddress(ZMQ.Socket zmqSocket, String address){
+        String port = address.substring(address.lastIndexOf(':') + 1);
+        return port.equals("0") ? zmqSocket.getLastEndpoint() : address;
     }
 
 

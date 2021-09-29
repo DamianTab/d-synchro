@@ -15,14 +15,12 @@ import java.util.List;
 //todo PortMapper also informs about disconnecting client
 @Slf4j
 public class PortMapperListenerRunnable extends ZmqListenerRunnable {
-    private final SocketProxyHandler proxyHandler;
     private final SocketProxy initializationReplayer;
     private final List<String> clientAddresses;
     private int counter = 0;
 
-    public PortMapperListenerRunnable(ZContext zContext, SocketProxy publisher, SocketProxyHandler proxyHandler, SocketProxy initializationReplayer) {
-        super(zContext, publisher);
-        this.proxyHandler = proxyHandler;
+    public PortMapperListenerRunnable(SocketProxyHandler proxyHandler, ZContext zContext, SocketProxy publisher, SocketProxy initializationReplayer) {
+        super(proxyHandler, zContext, publisher);
         this.initializationReplayer = initializationReplayer;
         clientAddresses = new ArrayList<>();
     }
@@ -60,7 +58,7 @@ public class PortMapperListenerRunnable extends ZmqListenerRunnable {
             log.info("Added new client with address: {}", requestMessage.getAddress());
         } else {
             InitResponseMessage message = InitResponseMessage.newBuilder()
-                    .setProcessID(++counter)
+                    .setProcessID(counter++)
                     .setPortMapperAddress(publisher.getAddress())
                     .addAllAddresses(clientAddresses)
                     .build();

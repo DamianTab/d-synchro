@@ -1,6 +1,7 @@
 package damian.tab.core.thread;
 
-import damian.tab.core.task.DistributedTask;
+import damian.tab.core.monitor.algorithm.RicartAgrawalaExecutor;
+import damian.tab.core.task.DistributedTaskInterface;
 import damian.tab.core.zmq.SocketProxy;
 import damian.tab.core.zmq.SocketProxyDelivererService;
 import damian.tab.core.zmq.SocketProxyHandler;
@@ -20,6 +21,7 @@ public class ThreadConfiguration {
     private final SocketProxyHandler proxyHandler;
     private final ZContextConfiguration zContextConfiguration;
     private final SocketProxyDelivererService socketDeliverer;
+    private final RicartAgrawalaExecutor algorithmExecutor;
 
     @Bean
     @Scope(value = "prototype")
@@ -27,7 +29,7 @@ public class ThreadConfiguration {
         ZContext context = zContextConfiguration.createZMQContext();
         SocketProxy publisher = socketDeliverer.createPublisher(context);
         SocketProxy initializationRequester = socketDeliverer.createPortMapperRequester(context);
-        return new ClientListenerRunnable(context, publisher, proxyHandler, initializationRequester);
+        return new ClientListenerRunnable(algorithmExecutor, proxyHandler, context, publisher, initializationRequester);
     }
 
     @Bean
@@ -36,12 +38,12 @@ public class ThreadConfiguration {
         ZContext context = zContextConfiguration.createZMQContext();
         SocketProxy publisher = socketDeliverer.createPublisher(context);
         SocketProxy initializationReplayer = socketDeliverer.createPortMapperReplayer(context);
-        return new PortMapperListenerRunnable(context, publisher, proxyHandler, initializationReplayer);
+        return new PortMapperListenerRunnable(proxyHandler, context, publisher, initializationReplayer);
     }
 
     @Bean
     @Scope(value = "prototype")
-    public DistributedThread createDistributedThread(DistributedTask distributedTask) {
-        return new DistributedThread(distributedTask, createClientListenerRunnable());
+    public DistributedThread createDistributedThread(DistributedTaskInterface distributedTask) {
+        return new DistributedThread(distributedTask, createClientListenerRunnable(), algorithmExecutor);
     }
 }

@@ -1,12 +1,15 @@
 package damian.tab.core.thread;
 
+import damian.tab.core.monitor.algorithm.RicartAgrawalaExecutor;
 import damian.tab.core.proto.InitRequestMessage;
 import damian.tab.core.proto.InitResponseMessage;
 import damian.tab.core.proto.NewConnectionMessage;
 import damian.tab.core.proto.SynchroMessage;
+import damian.tab.core.thread.model.ProcessData;
 import damian.tab.core.zmq.SocketProxy;
 import damian.tab.core.zmq.SocketProxyHandler;
 import damian.tab.core.zmq.SocketProxySubscriberInitializer;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.zeromq.ZContext;
 
@@ -16,38 +19,20 @@ import java.util.List;
 @Slf4j
 public class ClientListenerRunnable extends ZmqListenerRunnable {
 
-    private final SocketProxyHandler proxyHandler;
+    private final RicartAgrawalaExecutor algorithmExecutor;
     private final List<SocketProxy> subscriptions;
     private final SocketProxy initializationRequester;
 
+    @Getter
     private SocketProxy portMapperSubscriber;
-    private int processId;
+    @Getter
+    private ProcessData processData;
 
-    public ClientListenerRunnable(ZContext zContext, SocketProxy publisher, SocketProxyHandler proxyHandler, SocketProxy initializationRequester) {
-        super(zContext, publisher);
-        this.proxyHandler = proxyHandler;
+    public ClientListenerRunnable(RicartAgrawalaExecutor algorithmExecutor, SocketProxyHandler proxyHandler, ZContext zContext, SocketProxy publisher, SocketProxy initializationRequester) {
+        super(proxyHandler, zContext, publisher);
+        this.algorithmExecutor = algorithmExecutor;
         this.initializationRequester = initializationRequester;
         this.subscriptions = new ArrayList<>();
-    }
-
-    //todo throw error if address have been already taken
-    public void initializeProcessWithPortMapper() {
-        log.info("Initialize ClientListenerRunnable with PortMapper.");
-//        Send 1st message
-        sendRequestMessageToPortMapper(false);
-//        Receive PortMapper message with process configuration
-        InitResponseMessage responseMessage = (InitResponseMessage) proxyHandler.receive(initializationRequester);
-        log.info("Received response from portmapper: {}", responseMessage);
-        configureProcessIdAndSubscribersFromMessage(responseMessage);
-//        Send 2nd message to confirm
-        sendRequestMessageToPortMapper(true);
-//        Confirm from PortMapper to end 4-way handshake
-        NewConnectionMessage newConnectionMessage = (NewConnectionMessage) proxyHandler.receive(initializationRequester);
-        if (!newConnectionMessage.getAddress().equals(publisher.getAddress())) {
-            throw new RuntimeException("Receive wrong address from PortMapper - fault in portMapper configuration.");
-        }
-        log.info("Successfully initialized ClientListenerRunnable.");
-        initializationRequester.close();
     }
 
     @Override
@@ -58,6 +43,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
             zPoller.poll(-1L);
 //        New Client info from PortMapper
             while (zPoller.isReadable(portMapperSubscriber.getSocket())) {
+//                todo przerobic na ricart-agrawala executor
                 NewConnectionMessage newConnectionMessage = (NewConnectionMessage) proxyHandler.receive(portMapperSubscriber);
                 if (isNotThisAndNotInSubscriptions(newConnectionMessage.getAddress())) {
                     addNewSubscriberAndRegister(newConnectionMessage.getAddress());
@@ -68,7 +54,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
                 while (zPoller.isReadable(subscriber.getSocket())) {
                     SynchroMessage synchroMessage = (SynchroMessage) proxyHandler.receive(subscriber);
                     log.info("Received synchro message: {}", synchroMessage);
-                    //                    todo handle ricart-agrawali
+//                todo obsluzyc na ricart-agrawala executor
                 }
             });
         }
@@ -93,17 +79,38 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
         proxyHandler.send(initializationRequester, requestMessage);
     }
 
+    //todo throw custom error if address have been already taken
+    void initializeProcessWithPortMapper() {
+        log.info("Initialize ClientListenerRunnable with PortMapper.");
+//        Send 1st message
+        sendRequestMessageToPortMapper(false);
+//        Receive PortMapper message with process configuration
+        InitResponseMessage responseMessage = (InitResponseMessage) proxyHandler.receive(initializationRequester);
+        log.info("Received response from portmapper: {}", responseMessage);
+        configureProcessIdAndSubscribersFromMessage(responseMessage);
+//        Send 2nd message to confirm
+        sendRequestMessageToPortMapper(true);
+//        Confirm from PortMapper to end 4-way handshake
+        NewConnectionMessage newConnectionMessage = (NewConnectionMessage) proxyHandler.receive(initializationRequester);
+        if (!newConnectionMessage.getAddress().equals(publisher.getAddress())) {
+            throw new RuntimeException("Receive wrong address from PortMapper - fault in portMapper configuration.");
+        }
+        log.info("Successfully initialized ClientListenerRunnable.");
+        initializationRequester.close();
+    }
+
     private void configureProcessIdAndSubscribersFromMessage(InitResponseMessage responseMessage) {
-        processId = responseMessage.getProcessID();
+        processData = new ProcessData(responseMessage.getProcessID());
         portMapperSubscriber = SocketProxySubscriberInitializer.createSubscriber(zContext, responseMessage.getPortMapperAddress());
-        this.registerSocket(portMapperSubscriber);
+        registerSocket(portMapperSubscriber);
         responseMessage.getAddressesList().forEach(this::addNewSubscriberAndRegister);
     }
 
     private void addNewSubscriberAndRegister(String address) {
         SocketProxy subscriber = SocketProxySubscriberInitializer.createSubscriber(zContext, address);
         subscriptions.add(subscriber);
-        this.registerSocket(subscriber);
+        algorithmExecutor.expandClock(this);
+        registerSocket(subscriber);
         log.info("Added new client-subscriber with address {}", address);
     }
 

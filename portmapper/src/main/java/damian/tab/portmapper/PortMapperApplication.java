@@ -8,6 +8,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.util.concurrent.Executors;
+
 @Slf4j
 @SpringBootApplication
 public class PortMapperApplication {
@@ -16,13 +18,7 @@ public class PortMapperApplication {
         ConfigurableApplicationContext context = SpringApplication.run(CoreApplication.class, args);
         ThreadConfiguration factory = context.getBean(ThreadConfiguration.class);
         PortMapperListenerRunnable portMapperListenerRunnable = factory.createPortMapperListenerRunnable();
-        Thread thread = new Thread(portMapperListenerRunnable);
-        thread.start();
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Executors.newSingleThreadExecutor().execute(portMapperListenerRunnable);
     }
 
 }

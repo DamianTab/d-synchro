@@ -43,7 +43,6 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
             zPoller.poll(-1L);
 //        New Client info from PortMapper
             while (zPoller.isReadable(portMapperSubscriber.getSocket())) {
-//                todo przerobic na ricart-agrawala executor
                 NewConnectionMessage newConnectionMessage = (NewConnectionMessage) proxyHandler.receive(portMapperSubscriber);
                 if (isNotThisAndNotInSubscriptions(newConnectionMessage.getAddress())) {
                     addNewSubscriberAndRegister(newConnectionMessage.getAddress());

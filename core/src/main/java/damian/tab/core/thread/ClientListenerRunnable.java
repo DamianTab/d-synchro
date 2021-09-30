@@ -7,8 +7,8 @@ import damian.tab.core.proto.NewConnectionMessage;
 import damian.tab.core.proto.SynchroMessage;
 import damian.tab.core.thread.model.ProcessData;
 import damian.tab.core.zmq.SocketProxy;
+import damian.tab.core.zmq.SocketProxyBuilderService;
 import damian.tab.core.zmq.SocketProxyHandler;
-import damian.tab.core.zmq.SocketProxySubscriberInitializer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.zeromq.ZContext;
@@ -53,7 +53,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
                 while (zPoller.isReadable(subscriber.getSocket())) {
                     SynchroMessage synchroMessage = (SynchroMessage) proxyHandler.receive(subscriber);
                     log.info("Received synchro message: {}", synchroMessage);
-//                todo obsluzyc na ricart-agrawala executor
+                    algorithmExecutor.handleSynchroMessage(this, synchroMessage);
                 }
             });
         }
@@ -100,13 +100,13 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
 
     private void configureProcessIdAndSubscribersFromMessage(InitResponseMessage responseMessage) {
         processData = new ProcessData(responseMessage.getProcessID());
-        portMapperSubscriber = SocketProxySubscriberInitializer.createSubscriber(zContext, responseMessage.getPortMapperAddress());
+        portMapperSubscriber = SocketProxyBuilderService.createSubscriber(zContext, responseMessage.getPortMapperAddress());
         registerSocket(portMapperSubscriber);
         responseMessage.getAddressesList().forEach(this::addNewSubscriberAndRegister);
     }
 
     private void addNewSubscriberAndRegister(String address) {
-        SocketProxy subscriber = SocketProxySubscriberInitializer.createSubscriber(zContext, address);
+        SocketProxy subscriber = SocketProxyBuilderService.createSubscriber(zContext, address);
         subscriptions.add(subscriber);
         algorithmExecutor.expandClock(this);
         registerSocket(subscriber);

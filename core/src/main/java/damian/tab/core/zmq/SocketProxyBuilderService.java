@@ -8,9 +8,17 @@ import org.zeromq.ZContext;
 
 @Service
 @RequiredArgsConstructor
-public class SocketProxyDelivererService {
+public class SocketProxyBuilderService {
 
     private final EnvironmentProperties properties;
+
+    public static SocketProxy createSubscriber(ZContext zContext, String address){
+        return SocketProxy.builder()
+                .context(zContext)
+                .address(address)
+                .type(SocketType.SUB)
+                .build();
+    }
 
     public SocketProxy createPublisher(ZContext zContext){
         return SocketProxy.builder()

@@ -51,9 +51,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
 //            Handle SynchroMessage - lock/unlock or wait/notify from other clients
             subscriptions.forEach(subscriber -> {
                 while (zPoller.isReadable(subscriber.getSocket())) {
-                    SynchroMessage synchroMessage = (SynchroMessage) proxyHandler.receive(subscriber);
-                    log.info("Received synchro message: {}", synchroMessage);
-                    algorithmExecutor.handleSynchroMessage(this, synchroMessage);
+                    algorithmExecutor.handleSynchroMessage(this, subscriber);
                 }
             });
         }
@@ -68,14 +66,6 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
         }
         subscriptions.forEach(SocketProxy::close);
         log.info("Closed ClientListenerRunnable.");
-    }
-
-    private void sendRequestMessageToPortMapper(boolean confirmingMessage) {
-        InitRequestMessage requestMessage = InitRequestMessage.newBuilder()
-                .setAddress(publisher.getAddress())
-                .setReady(confirmingMessage)
-                .build();
-        proxyHandler.send(initializationRequester, requestMessage);
     }
 
     //todo throw custom error if address have been already taken
@@ -98,6 +88,14 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
         initializationRequester.close();
     }
 
+    private void sendRequestMessageToPortMapper(boolean confirmingMessage) {
+        InitRequestMessage requestMessage = InitRequestMessage.newBuilder()
+                .setAddress(publisher.getAddress())
+                .setReady(confirmingMessage)
+                .build();
+        proxyHandler.send(initializationRequester, requestMessage);
+    }
+
     private void configureProcessIdAndSubscribersFromMessage(InitResponseMessage responseMessage) {
         processData = new ProcessData(responseMessage.getProcessID());
         portMapperSubscriber = SocketProxyBuilderService.createSubscriber(zContext, responseMessage.getPortMapperAddress());
@@ -106,7 +104,9 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
     }
 
     private void addNewSubscriberAndRegister(String address) {
-        algorithmExecutor.expandClock(this);
+        synchronized (processData){
+            processData.getClock().add(0);
+        }
         SocketProxy subscriber = SocketProxyBuilderService.createSubscriber(zContext, address);
         subscriptions.add(subscriber);
         registerSocket(subscriber);

@@ -1,41 +1,58 @@
 package damian.tab.core.monitor;
 
+import damian.tab.core.monitor.algorithm.RequestShepherd;
 import damian.tab.core.monitor.algorithm.RicartAgrawalaExecutor;
+import damian.tab.core.monitor.algorithm.model.LockRequest;
+import damian.tab.core.monitor.algorithm.model.NotifyRequest;
 import damian.tab.core.proto.SynchroMessage;
 import damian.tab.core.thread.ClientListenerRunnable;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DistributedMonitor implements RicartAgrawalaSynchronizer{
+public class DistributedMonitor implements RicartAgrawalaSynchronizer {
+    private final String monitorId;
     private final ClientListenerRunnable clientListenerRunnable;
     private final RicartAgrawalaExecutor algorithmExecutor;
-    private final String monitorId;
+    private final RequestShepherd requestShepherd;
+
+    private LockRequest lockRequest;
 
     @Override
     public void dLock() {
-//        todo tworzenie requesta o sekcje krytyczna by zapamietac liczbe ACK
-        algorithmExecutor.sendMessageForCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.LOCK_ACK, monitorId);
-//        todo tutaj jakis mutex
+        lockRequest = requestShepherd.addNewLockRequest(clientListenerRunnable.getProcessData());
+        algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.LOCK_ACK, monitorId);
+        try {
+            lockRequest.wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void dUnlock() {
-//        todo tutaj rozeslac innym czekajacym w kolejce ACK
+        requestShepherd.removeRequest(clientListenerRunnable.getProcessData(), lockRequest);
+        algorithmExecutor.sendLockACKToWaitingProcesses(clientListenerRunnable, monitorId, lockRequest);
+        lockRequest = null;
     }
 
     @Override
     public void dWait() {
-//        todo tutaj jakis mutex + request na oczekiwanie notify
+        NotifyRequest notifyRequest = requestShepherd.addNewNotifyRequest(clientListenerRunnable.getProcessData());
+        try {
+            notifyRequest.wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //        todo tutaj rozeslac innym czekajacym ze koniec tury
     }
 
     @Override
     public void dNotify() {
-        algorithmExecutor.sendMessageForCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.NOTIFY, monitorId);
-
+        algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.NOTIFY, monitorId);
     }
 
     @Override
     public void dNotifyAll() {
-        algorithmExecutor.sendMessageForCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.NOTIFY_ALL, monitorId);
+        algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.NOTIFY_ALL, monitorId);
     }
 }

@@ -1,6 +1,7 @@
 package damian.tab.core.task;
 
 import damian.tab.core.monitor.DistributedMonitor;
+import damian.tab.core.monitor.algorithm.RequestShepherd;
 import damian.tab.core.monitor.algorithm.RicartAgrawalaExecutor;
 import damian.tab.core.thread.ClientListenerRunnable;
 import lombok.RequiredArgsConstructor;
@@ -10,19 +11,17 @@ public abstract class DistributedTask implements DistributedTaskInterface {
 
     private ClientListenerRunnable clientListenerRunnable;
     private RicartAgrawalaExecutor algorithmExecutor;
+    private RequestShepherd requestShepherd;
 
     @Override
-    public void assignClientListener(ClientListenerRunnable clientListener) {
+    public void assignNecessaryServices(ClientListenerRunnable clientListener, RicartAgrawalaExecutor algorithmExecutor, RequestShepherd requestShepherd) {
         this.clientListenerRunnable = clientListener;
-    }
-
-    @Override
-    public void assignAlgorithmExecutor(RicartAgrawalaExecutor algorithmExecutor) {
         this.algorithmExecutor = algorithmExecutor;
+        this.requestShepherd = requestShepherd;
     }
 
     @Override
     public DistributedMonitor createNewMonitor(String monitorId) {
-        return new DistributedMonitor(clientListenerRunnable, algorithmExecutor, monitorId);
+        return new DistributedMonitor(monitorId, clientListenerRunnable, algorithmExecutor, requestShepherd);
     }
 }

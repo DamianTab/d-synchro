@@ -106,9 +106,9 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
     }
 
     private void addNewSubscriberAndRegister(String address) {
+        algorithmExecutor.expandClock(this);
         SocketProxy subscriber = SocketProxyBuilderService.createSubscriber(zContext, address);
         subscriptions.add(subscriber);
-        algorithmExecutor.expandClock(this);
         registerSocket(subscriber);
         log.info("Added new client-subscriber with address {}", address);
     }

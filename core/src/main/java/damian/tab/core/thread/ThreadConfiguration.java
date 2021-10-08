@@ -1,5 +1,6 @@
 package damian.tab.core.thread;
 
+import damian.tab.core.monitor.algorithm.RequestShepherd;
 import damian.tab.core.monitor.algorithm.RicartAgrawalaExecutor;
 import damian.tab.core.task.DistributedTaskInterface;
 import damian.tab.core.zmq.SocketProxy;
@@ -22,6 +23,7 @@ public class ThreadConfiguration {
     private final SocketProxyHandler proxyHandler;
     private final SocketProxyBuilderService socketBuilderService;
     private final RicartAgrawalaExecutor algorithmExecutor;
+    private final RequestShepherd requestShepherd;
 
     @Bean
     @Scope(value = "prototype")
@@ -45,8 +47,7 @@ public class ThreadConfiguration {
     @Scope(value = "prototype")
     public DistributedThread createDistributedThread(DistributedTaskInterface distributedTask) {
         ClientListenerRunnable clientListenerRunnable = createClientListenerRunnable();
-        distributedTask.assignClientListener(clientListenerRunnable);
-        distributedTask.assignAlgorithmExecutor(algorithmExecutor);
+        distributedTask.assignNecessaryServices(clientListenerRunnable, algorithmExecutor, requestShepherd);
         return new DistributedThread(distributedTask, clientListenerRunnable);
     }
 }

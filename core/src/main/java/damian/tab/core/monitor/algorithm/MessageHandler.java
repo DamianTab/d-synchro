@@ -5,8 +5,10 @@ import damian.tab.core.thread.model.ProcessData;
 import damian.tab.core.zmq.SocketProxy;
 import damian.tab.core.zmq.SocketProxyHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageHandler {
@@ -17,6 +19,7 @@ public class MessageHandler {
         synchronized (processData) {
             clockSynchronizer.incrementClock(processData);
             proxyHandler.send(socketProxy, message);
+            log.info("Sended message {}: {}", message.getType(), message);
         }
     }
 
@@ -25,6 +28,7 @@ public class MessageHandler {
             SynchroMessage synchroMessage = (SynchroMessage) proxyHandler.receive(socketProxy);
             clockSynchronizer.incrementClock(processData);
             clockSynchronizer.synchronizeClock(processData, synchroMessage.getClockList());
+            log.info("Received synchro message {}: {}", synchroMessage.getType(), synchroMessage);
             return synchroMessage;
         }
     }

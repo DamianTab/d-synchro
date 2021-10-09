@@ -42,7 +42,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
         while (!Thread.interrupted()) {
             zPoller.poll(-1L);
 //        New Client info from PortMapper
-            while (zPoller.isReadable(portMapperSubscriber.getSocket())) {
+            if (zPoller.isReadable(portMapperSubscriber.getSocket())) {
                 NewConnectionMessage newConnectionMessage = (NewConnectionMessage) proxyHandler.receive(portMapperSubscriber);
                 if (isNotThisAndNotInSubscriptions(newConnectionMessage.getAddress())) {
                     addNewSubscriberAndRegister(newConnectionMessage.getAddress());
@@ -50,7 +50,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
             }
 //            Handle SynchroMessage - lock/unlock or wait/notify from other clients
             subscriptions.forEach(subscriber -> {
-                while (zPoller.isReadable(subscriber.getSocket())) {
+                if (zPoller.isReadable(subscriber.getSocket())) {
                     algorithmExecutor.handleSynchroMessage(this, subscriber);
                 }
             });

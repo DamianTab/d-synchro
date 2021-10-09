@@ -33,7 +33,7 @@ public class PortMapperListenerRunnable extends ZmqListenerRunnable {
         while (!Thread.interrupted()) {
             zPoller.poll(-1L);
 //        New Client
-            while (zPoller.isReadable(initializationReplayer.getSocket())) {
+            if (zPoller.isReadable(initializationReplayer.getSocket())) {
                 InitRequestMessage requestMessage = (InitRequestMessage) proxyHandler.receive(initializationReplayer);
                 handleNewClientMessage(requestMessage);
             }

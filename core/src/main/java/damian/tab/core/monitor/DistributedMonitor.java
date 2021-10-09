@@ -22,15 +22,19 @@ public class DistributedMonitor implements RicartAgrawalaSynchronizer {
     @Override
     public void dLock() {
         lockRequest = requestShepherd.addNewLockRequest(monitorId, clientListenerRunnable.getProcessData());
-        algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.LOCK_ACK, monitorId);
+        algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.LOCK_REQ, monitorId);
         log.info("Monitor {} - dLock", monitorId);
-        if (!lockRequest.isInCriticalSection()){
-            try {
-                lockRequest.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+
+        synchronized (lockRequest){
+            if (!lockRequest.isInCriticalSection()){
+                try {
+                    lockRequest.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
+
 
         log.info("Monitor {} - in critical session", monitorId);
     }

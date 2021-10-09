@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RicartAgrawalaExecutor {
@@ -24,7 +23,6 @@ public class RicartAgrawalaExecutor {
         ProcessData processData = clientListenerRunnable.getProcessData();
         synchronized (processData) {
             SynchroMessage synchroMessage = messageHandler.receiveMessage(socketProxy, processData);
-            log.info("Received synchro message: {}", synchroMessage);
 
 //            todo byc moze tutaj null
             if (synchroMessage.getReceiverProcessIDList().isEmpty() || synchroMessage.getReceiverProcessIDList().contains(processData.getProcessId())) {
@@ -36,7 +34,7 @@ public class RicartAgrawalaExecutor {
                         handleLOCK_REQ(clientListenerRunnable, processData, monitorId, synchroMessage);
                         break;
                     case LOCK_ACK:
-                        handleLOCK_ACK(clientListenerRunnable, processData, monitorId, synchroMessage);
+                        handleLOCK_ACK(processData, monitorId, synchroMessage);
                         break;
                 }
             }
@@ -44,13 +42,15 @@ public class RicartAgrawalaExecutor {
     }
 
     public void sendLockACKToWaitingProcesses(ClientListenerRunnable clientListenerRunnable, String monitorId, LockRequest lockRequest) {
-        ProcessData processData = clientListenerRunnable.getProcessData();
-        SynchroMessage.Builder messageBuilder = createSynchroMessage(processData, SynchroMessage.MessageType.LOCK_ACK, monitorId);
         List<Integer> receivers = lockRequest.getWaitingQueue().stream()
                 .map(SynchroMessage::getProcessID)
                 .collect(Collectors.toList());
-        messageBuilder.addAllReceiverProcessID(receivers);
-        messageHandler.sendMessage(clientListenerRunnable.getPublisher(), processData, messageBuilder.build());
+        if (!receivers.isEmpty()){
+            ProcessData processData = clientListenerRunnable.getProcessData();
+            SynchroMessage.Builder messageBuilder = createSynchroMessage(processData, SynchroMessage.MessageType.LOCK_ACK, monitorId);
+            messageBuilder.addAllReceiverProcessID(receivers);
+            messageHandler.sendMessage(clientListenerRunnable.getPublisher(), processData, messageBuilder.build());
+        }
     }
 
     public void sendMessageAboutCriticalSection(ClientListenerRunnable clientListenerRunnable, SynchroMessage.MessageType messageType, String monitorId) {
@@ -79,7 +79,7 @@ public class RicartAgrawalaExecutor {
         }
     }
 
-    private void handleLOCK_ACK(ClientListenerRunnable clientListenerRunnable, ProcessData processData, String monitorId, SynchroMessage synchroMessage) {
+    private void handleLOCK_ACK(ProcessData processData, String monitorId, SynchroMessage synchroMessage) {
         Optional<LockRequest> optionalLockRequest = processData.getLockUnlockRequests().stream()
                 .filter(lockRequest -> lockRequest.getMonitorId().equals(monitorId))
                 .findFirst();
@@ -88,7 +88,9 @@ public class RicartAgrawalaExecutor {
             lockRequest.getAckList().set(synchroMessage.getProcessID(), 1);
             if (lockRequest.isPossibleToAcquireCriticalSection()) {
                 lockRequest.setInCriticalSection(true);
-                lockRequest.notify();
+                synchronized (lockRequest){
+                    lockRequest.notify();
+                }
             }
         }
     }

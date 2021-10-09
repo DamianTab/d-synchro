@@ -13,8 +13,8 @@ import java.util.List;
 public class NotifyRequest extends LockRequest {
     private final List<Integer> receivedNotifies;
 
-    public NotifyRequest(ProcessData processData) {
-        super(processData);
+    public NotifyRequest(String monitorId, ProcessData processData) {
+        super(monitorId, processData);
         this.receivedNotifies = new ArrayList<>();
     }
 }

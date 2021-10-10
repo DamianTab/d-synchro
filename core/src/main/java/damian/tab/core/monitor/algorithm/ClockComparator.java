@@ -35,7 +35,7 @@ public class ClockComparator {
                 return 0;
             }
             boolean isGreater = true, isLess = true;
-            for (int i = 0; i < clock.size(); i++) {
+            for (int i = 0; i < messageClock.size(); i++) {
                 if (clock.get(i) < messageClock.get(i)) {
                     isGreater = false;
                 } else if (clock.get(i) > messageClock.get(i)) {

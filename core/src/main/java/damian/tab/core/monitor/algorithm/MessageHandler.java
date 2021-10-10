@@ -15,21 +15,33 @@ public class MessageHandler {
     private final SocketProxyHandler proxyHandler;
     private final ClockSynchronizer clockSynchronizer;
 
-    public void sendMessage(SocketProxy socketProxy, ProcessData processData, SynchroMessage message) {
+    public void sendMessage(SocketProxy socketProxy, ProcessData processData, SynchroMessage.Builder builder) {
         synchronized (processData) {
             clockSynchronizer.incrementClock(processData);
+            SynchroMessage message = builder
+                    .addAllClock(processData.getClock())
+                    .build();
             proxyHandler.send(socketProxy, message);
-            log.info("Sended message {}: {}", message.getType(), message);
+            log.info("\n -------- Send message: {}", synchroMessageAsString(message));
         }
     }
 
     public SynchroMessage receiveMessage(SocketProxy socketProxy, ProcessData processData) {
         synchronized (processData) {
-            SynchroMessage synchroMessage = (SynchroMessage) proxyHandler.receive(socketProxy);
+            SynchroMessage message = (SynchroMessage) proxyHandler.receive(socketProxy);
+            log.info("\n -------- Received message: {}", synchroMessageAsString(message));
             clockSynchronizer.incrementClock(processData);
-            clockSynchronizer.synchronizeClock(processData, synchroMessage.getClockList());
-            log.info("Received synchro message {}: {}", synchroMessage.getType(), synchroMessage);
-            return synchroMessage;
+            clockSynchronizer.synchronizeClock(processData, message.getClockList());
+            return message;
         }
+    }
+
+    private String synchroMessageAsString(SynchroMessage synchroMessage) {
+        return "messageType: " + synchroMessage.getType() + "  | " +
+                "clock: " + synchroMessage.getClockList() + "  | " +
+                "senderProcessId: " + synchroMessage.getProcessID() + "  | " +
+                "receiverProcessId: " + synchroMessage.getReceiverProcessIDList() + "  | " +
+                "monitorId: " + synchroMessage.getObjectID() + "  | " +
+                "notifyId: " + synchroMessage.getNotifyID();
     }
 }

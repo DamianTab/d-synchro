@@ -4,7 +4,6 @@ import damian.tab.core.monitor.algorithm.RicartAgrawalaExecutor;
 import damian.tab.core.proto.InitRequestMessage;
 import damian.tab.core.proto.InitResponseMessage;
 import damian.tab.core.proto.NewConnectionMessage;
-import damian.tab.core.proto.SynchroMessage;
 import damian.tab.core.thread.model.ProcessData;
 import damian.tab.core.zmq.SocketProxy;
 import damian.tab.core.zmq.SocketProxyBuilderService;
@@ -110,7 +109,7 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
         SocketProxy subscriber = SocketProxyBuilderService.createSubscriber(zContext, address);
         subscriptions.add(subscriber);
         registerSocket(subscriber);
-        log.info("Added new client-subscriber with address {}", address);
+        log.info("Added new client-subscriber with address {} , clock now is {}", address, processData.GetThreadSafeClock()) ;
     }
 
     private boolean isNotThisAndNotInSubscriptions(String address) {

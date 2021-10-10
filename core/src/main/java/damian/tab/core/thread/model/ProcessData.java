@@ -26,7 +26,7 @@ public class ProcessData {
         notifyIdGenerator = new AtomicInteger(processId * 10_000_000);
     }
 
-    public List<Integer> synchronizedGetClock() {
+    public List<Integer> GetThreadSafeClock() {
         synchronized (this) {
             return clock;
         }

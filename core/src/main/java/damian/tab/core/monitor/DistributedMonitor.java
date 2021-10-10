@@ -22,8 +22,11 @@ public class DistributedMonitor implements RicartAgrawalaSynchronizer {
     @Override
     public void dLock() {
         log.info("----------------------- Monitor {} - D_LOCK", monitorId);
-        lockRequest = requestShepherd.addNewLockRequest(monitorId, clientListenerRunnable.getProcessData());
-        algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.LOCK_REQ, monitorId);
+
+        synchronized (clientListenerRunnable.getProcessData()){
+            algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.LOCK_REQ, monitorId);
+            lockRequest = requestShepherd.addNewLockRequest(monitorId, clientListenerRunnable.getProcessData());
+        }
 
         synchronized (lockRequest){
             if (!lockRequest.isInCriticalSection()){
@@ -49,6 +52,8 @@ public class DistributedMonitor implements RicartAgrawalaSynchronizer {
 
     @Override
     public void dWait() {
+
+        //todo tutaj tez trzeba synchronizowac zegar w request by ybl taki sam jak przy wysylce
         NotifyRequest notifyRequest = requestShepherd.addNewNotifyRequest(monitorId, clientListenerRunnable.getProcessData());
         if (!notifyRequest.isInCriticalSection()){
             try {

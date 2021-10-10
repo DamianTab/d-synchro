@@ -15,22 +15,22 @@ public class RequestShepherd {
 
     public LockRequest addNewLockRequest(String monitorId, ProcessData processData) {
         synchronized (processData) {
-            clockSynchronizer.incrementClock(processData);
             LockRequest lockRequest = new LockRequest(monitorId, processData);
             processData.getLockUnlockRequests().add(lockRequest);
             acquireCriticalSectionIfNoOtherProcessAlive(lockRequest);
             log.info("Created Lock Request {}", lockRequest);
+            clockSynchronizer.incrementClock(processData);
             return lockRequest;
         }
     }
 
     public NotifyRequest addNewNotifyRequest(String monitorId, ProcessData processData) {
         synchronized (processData) {
-            clockSynchronizer.incrementClock(processData);
             NotifyRequest notifyRequest = new NotifyRequest(monitorId, processData);
             processData.getWaitNotifyRequests().add(notifyRequest);
             acquireCriticalSectionIfNoOtherProcessAlive(notifyRequest);
             log.info("Created Notify Request {}", notifyRequest);
+            clockSynchronizer.incrementClock(processData);
             return notifyRequest;
         }
     }

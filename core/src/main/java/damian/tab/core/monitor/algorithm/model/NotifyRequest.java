@@ -3,11 +3,13 @@ package damian.tab.core.monitor.algorithm.model;
 import damian.tab.core.thread.model.ProcessData;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
+@ToString
 @Getter
 @EqualsAndHashCode(callSuper = true)
 public class NotifyRequest extends LockRequest {

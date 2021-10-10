@@ -66,7 +66,7 @@ public class RicartAgrawalaExecutor {
                 .findFirst();
         if (optionalLockRequest.isPresent()) {
             LockRequest lockRequest = optionalLockRequest.get();
-            if (lockRequest.isInCriticalSection() || clockComparator.isInternalClockLess(processData, synchroMessage)) {
+            if (lockRequest.isInCriticalSection() || clockComparator.isClockLess(processData.getProcessId(), lockRequest.getClockTimestamp(), synchroMessage)) {
                 lockRequest.getWaitingQueue().add(synchroMessage);
             } else {
                 sendLockACK(clientListenerRunnable, processData, monitorId, synchroMessage);

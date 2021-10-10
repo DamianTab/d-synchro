@@ -23,7 +23,7 @@ public class CoreApplication {
             @SneakyThrows
             @Override
             public void run() {
-                int time = 6000;
+                int time = 8_000;
                 DistributedMonitor monitor = this.createNewMonitor("LOL");
                 Thread.sleep(time);
 

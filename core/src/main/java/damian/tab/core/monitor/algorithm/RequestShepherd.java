@@ -4,8 +4,10 @@ import damian.tab.core.monitor.algorithm.model.LockRequest;
 import damian.tab.core.monitor.algorithm.model.NotifyRequest;
 import damian.tab.core.thread.model.ProcessData;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RequestShepherd {
@@ -13,20 +15,22 @@ public class RequestShepherd {
 
     public LockRequest addNewLockRequest(String monitorId, ProcessData processData) {
         synchronized (processData) {
+            clockSynchronizer.incrementClock(processData);
             LockRequest lockRequest = new LockRequest(monitorId, processData);
             processData.getLockUnlockRequests().add(lockRequest);
-            clockSynchronizer.incrementClock(processData);
             acquireCriticalSectionIfNoOtherProcessAlive(lockRequest);
+            log.info("Created Lock Request {}", lockRequest);
             return lockRequest;
         }
     }
 
     public NotifyRequest addNewNotifyRequest(String monitorId, ProcessData processData) {
         synchronized (processData) {
+            clockSynchronizer.incrementClock(processData);
             NotifyRequest notifyRequest = new NotifyRequest(monitorId, processData);
             processData.getWaitNotifyRequests().add(notifyRequest);
-            clockSynchronizer.incrementClock(processData);
             acquireCriticalSectionIfNoOtherProcessAlive(notifyRequest);
+            log.info("Created Notify Request {}", notifyRequest);
             return notifyRequest;
         }
     }

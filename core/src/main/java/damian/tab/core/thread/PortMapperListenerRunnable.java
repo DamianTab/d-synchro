@@ -50,11 +50,16 @@ public class PortMapperListenerRunnable extends ZmqListenerRunnable {
     private void handleNewClientMessage(InitRequestMessage requestMessage) {
         if (requestMessage.getReady()) {
             clientAddresses.add(requestMessage.getAddress());
+
+            InitResponseMessage initResponseMessage = InitResponseMessage.newBuilder()
+                    .addAllAddresses(clientAddresses)
+                    .build();
+            proxyHandler.send(initializationReplayer, initResponseMessage);
+
             NewConnectionMessage message = NewConnectionMessage.newBuilder()
                     .setAddress(requestMessage.getAddress())
                     .build();
             proxyHandler.send(publisher, message);
-            proxyHandler.send(initializationReplayer, message);
             log.info("Added new client with address: {}", requestMessage.getAddress());
         } else {
             InitResponseMessage message = InitResponseMessage.newBuilder()

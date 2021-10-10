@@ -26,6 +26,7 @@ abstract class ZmqListenerRunnable implements Runnable, AutoCloseable {
     }
 
     protected void registerSocket(SocketProxy socketProxy) {
-        this.zPoller.register(socketProxy.getSocket(), ZPoller.POLLIN);
+        boolean success = this.zPoller.register(socketProxy.getSocket(), ZPoller.POLLIN);
+        if (!success) throw new RuntimeException("Cannot register socket !!!! [ " + socketProxy.getAddress() +"]");
     }
 }

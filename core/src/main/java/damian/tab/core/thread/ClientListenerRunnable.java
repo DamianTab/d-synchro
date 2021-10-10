@@ -67,7 +67,6 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
         log.info("Closed ClientListenerRunnable.");
     }
 
-    //todo throw custom error if address have been already taken
     void initializeProcessWithPortMapper() {
         log.info("Initialize ClientListenerRunnable with PortMapper.");
 //        Send 1st message
@@ -79,10 +78,13 @@ public class ClientListenerRunnable extends ZmqListenerRunnable {
 //        Send 2nd message to confirm
         sendRequestMessageToPortMapper(true);
 //        Confirm from PortMapper to end 4-way handshake
-        NewConnectionMessage newConnectionMessage = (NewConnectionMessage) proxyHandler.receive(initializationRequester);
-        if (!newConnectionMessage.getAddress().equals(publisher.getAddress())) {
-            throw new RuntimeException("Receive wrong address from PortMapper - fault in portMapper configuration.");
-        }
+        responseMessage = (InitResponseMessage) proxyHandler.receive(initializationRequester);
+        log.info("Received response from portmapper: {}", responseMessage);
+        responseMessage.getAddressesList().forEach(address -> {
+            if (isNotThisAndNotInSubscriptions(address)){
+                addNewSubscriberAndRegister(address);
+            }
+        });
         log.info("Successfully initialized ClientListenerRunnable.");
         initializationRequester.close();
     }

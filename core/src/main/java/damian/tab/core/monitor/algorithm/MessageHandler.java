@@ -29,10 +29,13 @@ public class MessageHandler {
     public SynchroMessage receiveMessage(SocketProxy socketProxy, ProcessData processData) {
         synchronized (processData) {
             SynchroMessage message = (SynchroMessage) proxyHandler.receive(socketProxy);
-            log.info("\n -------- Received message: {}", synchroMessageAsString(message));
-            clockSynchronizer.incrementClock(processData);
-            clockSynchronizer.synchronizeClock(processData, message.getClockList());
-            return message;
+            if (message.getReceiverProcessIDList().isEmpty() || message.getReceiverProcessIDList().contains(processData.getProcessId())){
+                log.info("\n -------- Received message: {}", synchroMessageAsString(message));
+                clockSynchronizer.incrementClock(processData);
+                clockSynchronizer.synchronizeClock(processData, message.getClockList());
+                return message;
+            }
+            return null;
         }
     }
 

@@ -23,7 +23,7 @@ public class RicartAgrawalaExecutor {
         synchronized (processData) {
             SynchroMessage synchroMessage = messageHandler.receiveMessage(socketProxy, processData);
 
-            if (synchroMessage.getReceiverProcessIDList().isEmpty() || synchroMessage.getReceiverProcessIDList().contains(processData.getProcessId())) {
+            if (synchroMessage != null) {
                 String monitorId = synchroMessage.getObjectID();
                 // todo dorobic obsluge notify
                 switch (synchroMessage.getType()) {

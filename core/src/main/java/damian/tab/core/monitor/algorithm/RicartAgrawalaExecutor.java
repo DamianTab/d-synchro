@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class RicartAgrawalaExecutor {
     private final MessageHandler messageHandler;
     private final ClockComparator clockComparator;
+    private final ClockSynchronizer clockSynchronizer;
 
     public void handleSynchroMessage(ClientListenerRunnable clientListenerRunnable, SocketProxy socketProxy) {
         ProcessData processData = clientListenerRunnable.getProcessData();
@@ -190,6 +191,10 @@ public class RicartAgrawalaExecutor {
                 notifyRequest.getAckList().clear();
                 notifyRequest.getAckList().addAll(Collections.nCopies(processData.getClock().size(), 0));
                 notifyRequest.getAckList().set(processData.getProcessId(), 1);
+
+                clockSynchronizer.incrementClock(processData);
+                notifyRequest.getClockTimestamp().clear();
+                notifyRequest.getClockTimestamp().addAll(processData.getClock());
 
                 int newSessionId = ongoingSessions.get(0);
                 notifyRequest.getWaitingQueue().stream()

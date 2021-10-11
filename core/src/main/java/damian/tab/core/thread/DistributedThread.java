@@ -1,6 +1,7 @@
 package damian.tab.core.thread;
 
 import damian.tab.core.task.DistributedTaskInterface;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Executors;
@@ -20,12 +21,15 @@ public class DistributedThread implements Runnable, AutoCloseable {
         this.clientListenerThread = clientListenerThread;
     }
 
+    @SneakyThrows
     @Override
     public void run() {
         log.info("Starting Distributed Thread.");
         clientListenerThread.initializeProcessWithPortMapper();
         //todo graceful shutdown
         Executors.newSingleThreadExecutor().execute(clientListenerThread);
+//        Wait to synchronize every distributed client with PortMapper
+        Thread.sleep(5000);
         distributedTask.run();
     }
 

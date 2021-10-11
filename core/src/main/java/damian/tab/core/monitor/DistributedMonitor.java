@@ -39,7 +39,7 @@ public class DistributedMonitor implements RicartAgrawalaSynchronizer {
         }
 
 
-        log.info("----------------------- Monitor {} - CRITICAL SECTION", monitorId);
+        log.info("----------------------- Monitor {} - LOCK_UNLOCK CRITICAL SECTION", monitorId);
     }
 
     @Override
@@ -52,6 +52,7 @@ public class DistributedMonitor implements RicartAgrawalaSynchronizer {
 
     @Override
     public void dWait() {
+        log.info("----------------------- Monitor {} - WAIT", monitorId);
 
         //todo tutaj tez trzeba synchronizowac zegar w request by ybl taki sam jak przy wysylce
         NotifyRequest notifyRequest = requestShepherd.addNewNotifyRequest(monitorId, clientListenerRunnable.getProcessData());
@@ -62,16 +63,19 @@ public class DistributedMonitor implements RicartAgrawalaSynchronizer {
                 e.printStackTrace();
             }
         }
+        log.info("----------------------- Monitor {} - Received notify", monitorId);
         //        todo tutaj rozeslac innym czekajacym ze koniec tury
     }
 
     @Override
     public void dNotify() {
+        log.info("----------------------- Monitor {} - NOTIFY", monitorId);
         algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.NOTIFY, monitorId);
     }
 
     @Override
     public void dNotifyAll() {
+        log.info("----------------------- Monitor {} - NOTIFY_ALL", monitorId);
         algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.NOTIFY_ALL, monitorId);
     }
 }

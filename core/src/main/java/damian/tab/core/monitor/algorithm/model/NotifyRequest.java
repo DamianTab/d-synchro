@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@ToString
 @Getter
 @EqualsAndHashCode(callSuper = true)
 public class NotifyRequest extends LockRequest {
@@ -18,5 +17,12 @@ public class NotifyRequest extends LockRequest {
     public NotifyRequest(String monitorId, ProcessData processData) {
         super(monitorId, processData);
         this.receivedNotifies = new ArrayList<>();
+    }
+
+    @Override
+    public String toString() {
+        return "NotifyRequest{" +
+                "receivedNotifies=" + receivedNotifies +
+                "}-" + super.toString();
     }
 }

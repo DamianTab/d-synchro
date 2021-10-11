@@ -14,10 +14,10 @@ import java.util.concurrent.Executors;
 
 @Slf4j
 @SpringBootApplication
-public class FirstWaitNotifyExampleApplication {
+public class SecondWaitNotifyExampleApplication {
 
     public static void main(String[] args) {
-        ConfigurableApplicationContext context = SpringApplication.run(FirstWaitNotifyExampleApplication.class, args);
+        ConfigurableApplicationContext context = SpringApplication.run(SecondWaitNotifyExampleApplication.class, args);
 
         DistributedTask task = new DistributedTask() {
             @SneakyThrows
@@ -26,10 +26,12 @@ public class FirstWaitNotifyExampleApplication {
                 int time = 4_000;
                 DistributedMonitor monitor = this.createNewMonitor("DistributedMonitor");
 
+//                Wait for other distributed threads to make dWait()
+                Thread.sleep(2000);
+                monitor.dNotify();
+
                 monitor.dWait();
                 Thread.sleep(time);
-
-                monitor.dNotify();
                 log.info("FINISH ----------------------");
             }
         };

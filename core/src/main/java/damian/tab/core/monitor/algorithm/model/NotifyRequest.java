@@ -4,18 +4,18 @@ import damian.tab.core.thread.model.ProcessData;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
 public class NotifyRequest extends CriticalSectionRequest {
-    private final List<Integer> receivedNotifies;
+    private final List<Integer> ongoingNotifySessions;
 
     public NotifyRequest(String monitorId, ProcessData processData) {
         super(monitorId, processData);
-        this.receivedNotifies = new ArrayList<>();
+        this.ongoingNotifySessions = new LinkedList<>();
     }
 
     @Override
@@ -25,7 +25,7 @@ public class NotifyRequest extends CriticalSectionRequest {
                 ", clockTimestamp=" + clockTimestamp +
                 ", ackList=" + ackList +
                 ", waitingQueue=" + waitingQueue +
-                ", receivedNotifies=" + receivedNotifies +
+                ", ongoingNotifySessions=" + ongoingNotifySessions +
                 '}';
     }
 }

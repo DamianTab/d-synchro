@@ -24,7 +24,7 @@ public class LockUnlockExampleApplication {
             @Override
             public void run() {
                 int time = 5_000;
-                DistributedMonitor monitor = this.createNewMonitor("LOL");
+                DistributedMonitor monitor = this.createNewMonitor("DistributedMonitor");
 
                 monitor.dLock();
                 Thread.sleep(time);

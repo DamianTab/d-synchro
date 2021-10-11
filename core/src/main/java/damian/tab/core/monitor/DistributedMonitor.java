@@ -23,8 +23,8 @@ public class DistributedMonitor implements RicartAgrawalaSynchronizer {
     public void dLock() {
         log.info("----------------------- Monitor {} - D_LOCK", monitorId);
         synchronized (clientListenerRunnable.getProcessData()) {
-            algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.LOCK_REQ, monitorId);
             lockRequest = requestShepherd.addNewLockRequest(monitorId, clientListenerRunnable.getProcessData());
+            algorithmExecutor.sendMessageAboutCriticalSection(clientListenerRunnable, SynchroMessage.MessageType.LOCK_REQ, monitorId);
         }
 
         synchronized (lockRequest) {
@@ -50,16 +50,20 @@ public class DistributedMonitor implements RicartAgrawalaSynchronizer {
     @Override
     public void dWait() {
         log.info("----------------------- Monitor {} - WAIT", monitorId);
-
-        //todo tutaj tez trzeba synchronizowac zegar w request by ybl taki sam jak przy wysylce
         NotifyRequest notifyRequest = requestShepherd.addNewNotifyRequest(monitorId, clientListenerRunnable.getProcessData());
-        try {
-            notifyRequest.wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        synchronized (notifyRequest){
+            try {
+                notifyRequest.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
-        log.info("----------------------- Monitor {} - Received notify", monitorId);
-        //        todo tutaj rozeslac innym czekajacym ze koniec tury
+        requestShepherd.removeRequest(clientListenerRunnable.getProcessData(), notifyRequest);
+//        It's not notifyAll
+        if (notifyRequest.getOngoingNotifySessions().get(0) != -1){
+            algorithmExecutor.informAboutFinishedNotifySession(clientListenerRunnable, monitorId, notifyRequest);
+        }
+        log.info("----------------------- Monitor {} - EXIT of WAIT", monitorId);
     }
 
     @Override
